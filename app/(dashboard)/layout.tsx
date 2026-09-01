@@ -2,5 +2,35 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth.store';
-const links = [{ href: '/dashboard', label: 'Tableau de bord', roles: ['ADMIN','TEACHER','SECRETARY','PEDAGOGICAL_COUNCIL'] }, { href: '/students', label: 'Élèves & inscriptions', roles: ['ADMIN','SECRETARY'] }, { href: '/teachers', label: 'Enseignants', roles: ['ADMIN','SECRETARY'] }, { href: '/academic', label: 'Structure & matières', roles: ['ADMIN','SECRETARY'] }, { href: '/assignments', label: 'Affectations', roles: ['ADMIN','SECRETARY'] }, { href: '/grades/entry', label: 'Saisie des notes', roles: ['ADMIN','TEACHER'] }, { href: '/grades/validation', label: 'Validation des notes', roles: ['ADMIN','PEDAGOGICAL_COUNCIL'] }, { href: '/reports', label: 'Bulletins', roles: ['ADMIN','SECRETARY','PEDAGOGICAL_COUNCIL'] }];
-export default function DashboardLayout({ children }: { children: React.ReactNode }) { const user = useAuthStore((s) => s.user); const clear = useAuthStore((s) => s.clear); const router = useRouter(); const path = usePathname(); return <div className="min-h-screen md:grid md:grid-cols-[250px_1fr]"><aside className="bg-slate-950 p-5 text-slate-100"><Link href="/dashboard" className="text-xl font-bold text-white">Kotaschool</Link><p className="mt-1 text-xs text-slate-400">Gestion scolaire</p><nav className="mt-8 space-y-1">{links.filter((l) => !user || l.roles.includes(user.role)).map((l) => <Link key={l.href} href={l.href} className={`block rounded-md px-3 py-2 text-sm ${path === l.href ? 'bg-brand-600 text-white' : 'text-slate-300 hover:bg-slate-800'}`}>{l.label}</Link>)}</nav></aside><div><header className="flex items-center justify-between border-b bg-white px-6 py-4"><div><p className="font-medium">{user?.username ?? 'Utilisateur'}</p><p className="text-xs text-slate-500">{user?.roleLabel ?? user?.role}</p></div><button onClick={() => { clear(); router.push('/login'); }} className="rounded-md border px-3 py-2 text-sm">Déconnexion</button></header><main className="p-6">{children}</main></div></div>; }
+const links = [{ href: '/dashboard', label: 'Tableau de bord', roles: ['ADMIN','TEACHER','SECRETARY','PEDAGOGICAL_COUNCIL'] }, { href: '/students', label: 'Élèves & inscriptions', roles: ['ADMIN','SECRETARY'] }, { href: '/teachers', label: 'Enseignants', roles: ['ADMIN','SECRETARY'] }, { href: '/academic', label: 'Structure & matières', roles: ['ADMIN','SECRETARY'] }, { href: '/assignments', label: 'Affectations', roles: ['ADMIN','SECRETARY'] }, { href: '/grades/entry', label: 'Saisie des notes', roles: ['TEACHER'] }, { href: '/grades/validation', label: 'Validation des notes', roles: ['ADMIN','PEDAGOGICAL_COUNCIL'] }, { href: '/reports', label: 'Bulletins', roles: ['ADMIN','SECRETARY','PEDAGOGICAL_COUNCIL'] }];
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const user = useAuthStore((s) => s.user);
+  const clear = useAuthStore((s) => s.clear);
+  const router = useRouter();
+  const path = usePathname();
+  const current = links.find((l) => path.startsWith(l.href));
+  const authorized = !current || !user || current.roles.includes(user.role);
+  return (
+    <div className="min-h-screen md:grid md:grid-cols-[250px_1fr]">
+      <aside className="bg-slate-950 p-5 text-slate-100">
+        <Link href="/dashboard" className="text-xl font-bold text-white">Kotaschool</Link>
+        <p className="mt-1 text-xs text-slate-400">Gestion scolaire</p>
+        <nav className="mt-8 space-y-1">
+          {links.filter((l) => !user || l.roles.includes(user.role)).map((l) => (
+            <Link key={l.href} href={l.href} className={`block rounded-md px-3 py-2 text-sm ${path === l.href ? 'bg-brand-600 text-white' : 'text-slate-300 hover:bg-slate-800'}`}>{l.label}</Link>
+          ))}
+        </nav>
+      </aside>
+      <div>
+        <header className="flex items-center justify-between border-b bg-white px-6 py-4">
+          <div>
+            <p className="font-medium">{user?.username ?? 'Utilisateur'}</p>
+            <p className="text-xs text-slate-500">{user?.roleLabel ?? user?.role}</p>
+          </div>
+          <button onClick={() => { clear(); router.push('/login'); }} className="rounded-md border px-3 py-2 text-sm">Déconnexion</button>
+        </header>
+        <main className="p-6">{authorized ? children : <p className="text-sm text-red-600">Accès non autorisé pour votre rôle.</p>}</main>
+      </div>
+    </div>
+  );
+}
