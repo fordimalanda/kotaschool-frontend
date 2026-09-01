@@ -1,0 +1,1 @@
+export default function ReportsPage() { return <section><h1 className="text-2xl font-bold">Bulletins</h1><p className="mt-2 text-slate-600">Générez les bulletins périodiques, semestriels et annuels.</p></section>; }

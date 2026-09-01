@@ -1,0 +1,1 @@
+export default function ValidationPage() { return <section><h1 className="text-2xl font-bold">Validation des notes</h1><p className="mt-2 text-slate-600">Le conseil pédagogique contrôle et verrouille les évaluations soumises.</p></section>; }

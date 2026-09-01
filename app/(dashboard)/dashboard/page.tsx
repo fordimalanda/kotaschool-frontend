@@ -1,0 +1,1 @@
+export default function DashboardPage() { return <><h1 className="text-2xl font-bold">Tableau de bord</h1><p className="mt-2 text-slate-600">Bienvenue dans Kotaschool. Sélectionnez un module dans le menu.</p></>; }

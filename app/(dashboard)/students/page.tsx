@@ -1,0 +1,1 @@
+export default function StudentsPage() { return <section><h1 className="text-2xl font-bold">Élèves & inscriptions</h1><p className="mt-2 text-slate-600">La gestion des dossiers élèves et des inscriptions annuelles sera disponible ici.</p></section>; }

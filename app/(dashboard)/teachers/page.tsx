@@ -1,0 +1,1 @@
+export default function TeachersPage() { return <section><h1 className="text-2xl font-bold">Enseignants</h1><p className="mt-2 text-slate-600">Créez, modifiez, désactivez et consultez les fiches des enseignants.</p></section>; }

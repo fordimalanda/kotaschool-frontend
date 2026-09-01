@@ -1,0 +1,1 @@
+export default function AssignmentsPage() { return <section><h1 className="text-2xl font-bold">Affectations</h1><p className="mt-2 text-slate-600">Affectez les enseignants aux couples classe–matière pour chaque année scolaire.</p></section>; }
