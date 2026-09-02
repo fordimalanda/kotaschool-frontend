@@ -1,6 +1,7 @@
 'use client';
 import { FormEvent, useEffect, useState } from 'react';
 import { api } from '@/lib/api/client';
+import { useAuthStore } from '@/stores/auth.store';
 
 type Enseignant = { id: string; nom: string; postnom: string | null; prenom: string; sexe: 'M' | 'F'; telephone: string | null; email: string | null };
 
@@ -11,6 +12,17 @@ export default function TeachersPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const user = useAuthStore((s) => s.user);
+
+  function submitAdmin(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    setBusy(true); setError(''); setMessage('');
+    api.post('/administration/admins', { email: f.get('email'), motDePasse: (f.get('motDePasse') as string) || undefined })
+      .then(() => { setMessage('Administrateur créé avec succès.'); e.currentTarget.reset(); })
+      .catch((err: any) => setError(err.response?.data?.message?.toString?.() ?? 'Erreur lors de la création.'))
+      .finally(() => setBusy(false));
+  }
 
   async function refresh() {
     const { data } = await api.get<{ enseignants: Enseignant[] }>('/administration/catalogue');
@@ -25,7 +37,7 @@ export default function TeachersPage() {
     setBusy(true); setError(''); setMessage('');
     api.post('/administration/teachers', {
       nom: f.get('nom'), postnom: f.get('postnom') || undefined, prenom: f.get('prenom'),
-      sexe: f.get('sexe'), telephone: f.get('telephone') || undefined, email: f.get('email') || undefined,
+      sexe: f.get('sexe'), telephone: f.get('telephone') || undefined, email: f.get('email'), motDePasse: (f.get('motDePasse') as string) || undefined,
     }).then(async () => {
       setMessage('Enseignant créé avec succès.');
       e.currentTarget.reset();
@@ -49,10 +61,22 @@ export default function TeachersPage() {
         <div className="grid gap-3 md:grid-cols-3">
           <select required name="sexe" className={inputCls} defaultValue="M"><option value="M">Masculin</option><option value="F">Féminin</option></select>
           <input name="telephone" placeholder="Téléphone" className={inputCls} />
-          <input name="email" type="email" placeholder="Email" className={inputCls} />
+          <input required name="email" type="email" placeholder="Email de connexion" className={inputCls} />
         </div>
+        <input name="motDePasse" type="password" placeholder="Mot de passe (laisser vide = prof)" className={inputCls} />
         <button disabled={busy} className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">Créer l’enseignant</button>
       </form>
+
+      {user?.role === 'ADMIN' && (
+        <form onSubmit={submitAdmin} className="space-y-3 rounded-lg bg-white p-5 shadow-sm">
+          <h2 className="font-semibold">Nouvel administrateur</h2>
+          <div className="grid gap-3 md:grid-cols-2">
+            <input required name="email" type="email" placeholder="Email de connexion" className={inputCls} />
+            <input name="motDePasse" type="password" placeholder="Mot de passe (laisser vide = admin)" className={inputCls} />
+          </div>
+          <button disabled={busy} className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">Créer l’administrateur</button>
+        </form>
+      )}
 
       <div className="overflow-x-auto rounded-lg bg-white shadow-sm">
         <table className="w-full text-left text-sm">
