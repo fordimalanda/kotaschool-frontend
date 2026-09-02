@@ -42,7 +42,7 @@ export default function GradeEntryPage() {
       if (data.assignments[0]) setAssignmentId(data.assignments[0].id);
       if (data.semestres[0]) { setSemestreId(data.semestres[0].id); setPeriodeId(data.semestres[0].periodes[0]?.id ?? ''); }
       if (data.typesEvaluation[0]) setTypeId(data.typesEvaluation[0].id);
-    }).catch(() => setError('Impossible de charger le contexte. L'API est-elle démarrée ?')).finally(() => setLoading(false));
+    }).catch(() => setError("Impossible de charger le contexte. L'API est-elle démarrée ?")).finally(() => setLoading(false));
   }, []);
 
   const assignment = ctx?.assignments.find((a) => a.id === assignmentId) ?? null;
