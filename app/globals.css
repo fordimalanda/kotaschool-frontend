@@ -2,3 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 @layer base { * { @apply border-slate-200; } body { @apply bg-slate-50 text-slate-900; } }
+
+/* Impression des bulletins : on masque la navigation et les actions, on imprime le contenu principal. */
+@media print {
+  aside, header, .no-print { display: none !important; }
+  main { padding: 0 !important; }
+  body { background: #fff !important; }
+  .print-area { box-shadow: none !important; border: 1px solid #000; }
+}
