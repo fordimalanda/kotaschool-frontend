@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 export type SessionUser = { id: string; username: string; role: 'ADMIN' | 'TEACHER' | 'SECRETARY' | 'PEDAGOGICAL_COUNCIL'; roleLabel?: string };
-type AuthState = { token: string | null; user: SessionUser | null; setSession: (token: string, user: SessionUser) => void; clear: () => void };
-export const useAuthStore = create<AuthState>((set) => ({ token: null, user: null, setSession: (token, user) => set({ token, user }), clear: () => set({ token: null, user: null }) }));
+type AuthState = { token: string | null; user: SessionUser | null; hydrated: boolean; setSession: (token: string, user: SessionUser) => void; clear: () => void; setHydrated: (hydrated: boolean) => void };
+export const useAuthStore = create<AuthState>()(persist((set) => ({ token: null, user: null, hydrated: false, setSession: (token, user) => set({ token, user }), clear: () => set({ token: null, user: null }), setHydrated: (hydrated) => set({ hydrated }) }), { name: 'kotaschool-auth', storage: createJSONStorage(() => localStorage), onRehydrateStorage: () => (state) => state?.setHydrated(true) }));

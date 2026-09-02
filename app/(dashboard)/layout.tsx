@@ -7,12 +7,13 @@ const links = [{ href: '/dashboard', label: 'Tableau de bord', roles: ['ADMIN','
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
   const clear = useAuthStore((s) => s.clear);
+  const hydrated = useAuthStore((s) => s.hydrated);
   const router = useRouter();
   const path = usePathname();
   const current = links.find((l) => path.startsWith(l.href));
   const authorized = !current || !user || current.roles.includes(user.role);
-  useEffect(() => { if (!user) router.replace('/login'); }, [user, router]);
-  if (!user) return null;
+  useEffect(() => { if (hydrated && !user) router.replace('/login'); }, [hydrated, user, router]);
+  if (!hydrated || !user) return null;
   return (
     <div className="min-h-screen md:grid md:grid-cols-[250px_1fr]">
       <aside className="bg-slate-950 p-5 text-slate-100">
