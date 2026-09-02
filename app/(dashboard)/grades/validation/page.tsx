@@ -64,7 +64,7 @@ export default function ValidationPage() {
         <div className="overflow-x-auto rounded-lg bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-100 text-slate-600">
-              <tr><th className="p-3">Évaluation</th><th className="p-3">Classe / Matière</th><th className="p-3">Type</th><th className="p-3">Période</th><th className="p-3">Enseignant</th><th className="p-3">Notes</th><th className="p-3"></th></tr>
+              <tr><th className="p-3">Évaluation</th><th className="p-3">Classe / Matière</th><th className="p-3">Type</th><th className="p-3">Période</th><th className="p-3">Enseignant</th><th className="p-3">Notes</th></tr>
             </thead>
             <tbody>
               {pending.map((ev) => (
