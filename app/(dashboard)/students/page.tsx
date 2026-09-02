@@ -47,6 +47,7 @@ export default function StudentsPage() {
     create('students', {
       matricule: f.get('matricule'), nom: f.get('nom'), postnom: f.get('postnom') || undefined, prenom: f.get('prenom'),
       sexe: f.get('sexe'), dateNaissance: f.get('dateNaissance'), lieuNaissance: f.get('lieuNaissance') || undefined, adresse: f.get('adresse') || undefined,
+      email: f.get('email'), motDePasse: (f.get('motDePasse') as string) || undefined,
     }, e.currentTarget);
   }
 
@@ -74,6 +75,10 @@ export default function StudentsPage() {
             <select required name="sexe" className={inputCls} defaultValue="M"><option value="M">Masculin</option><option value="F">Féminin</option></select>
             <label className="text-sm text-slate-500">Naissance<input required type="date" name="dateNaissance" className={`${inputCls} mt-1`} /></label>
             <input name="lieuNaissance" placeholder="Lieu de naissance" className={inputCls} />
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <input required name="email" type="email" placeholder="Email de connexion" className={inputCls} />
+            <input name="motDePasse" type="password" placeholder="Mot de passe (laisser vide = student)" className={inputCls} />
           </div>
           <input name="adresse" placeholder="Adresse" className={inputCls} />
           <button disabled={busy} className={btnCls}>Créer l’élève</button>
