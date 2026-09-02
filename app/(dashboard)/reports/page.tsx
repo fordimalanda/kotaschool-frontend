@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api/client';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 type Semestre = { id: string; libelle: string; annee: { libelle: string } };
 type BoardRow = { inscriptionId: string; matricule: string; nom: string; classe: string; totalObtenu: number; totalMaximum: number; pourcentage: number; rang: number | null; decision: string | null };
@@ -15,6 +17,80 @@ type Detail = {
   rang: number | null;
   decision: string | null;
 };
+
+function esc(s: unknown): string {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/** Imprime UNIQUEMENT le bulletin (nouvelle fenêtre dédiée), pas toute la page. */
+function printBulletin(d: Detail) {
+  const w = window.open('', '_blank', 'width=820,height=900');
+  if (!w) return;
+  const rows = d.lignes.map((l) => `<tr><td>${esc(l.matiere)}</td><td class="c">${esc(l.coefficient)}</td><td class="c">${esc(l.note)}</td><td class="c">${esc(l.noteBulletin)}</td></tr>`).join('');
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Bulletin ${esc(d.eleve.nom)}</title><style>
+    body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;padding:24px;margin:0}
+    .head{display:flex;justify-content:space-between;gap:12px;border-bottom:2px solid #0f172a;padding-bottom:10px}
+    h1{margin:0;font-size:20px;color:#7c3aed}
+    table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px}
+    th,td{border:1px solid #334155;padding:6px;text-align:left}
+    th{background:#f1f5f9}
+    .c{text-align:center}
+    .tot td{font-weight:bold;background:#f8fafc}
+    .meta{margin:12px 0;font-size:13px;line-height:1.6}
+    .sig{margin-top:36px;font-size:11px;color:#475569}
+    @page{margin:16mm}
+  </style></head><body>
+    <div class="head"><div><h1>Kotaschool</h1><div>Système éducatif · EPSP</div></div>
+    <div style="text-align:right"><b>Bulletin · ${esc(d.semestre.libelle)}</b><br>Année scolaire ${esc(d.semestre.annee)}</div></div>
+    <p class="meta"><b>Élève :</b> ${esc(d.eleve.nom)} ${esc(d.eleve.postnom)} ${esc(d.eleve.prenom)}<br>
+    <b>Matricule :</b> ${esc(d.eleve.matricule)}<br>
+    <b>Classe :</b> ${esc(d.eleve.classe)} · ${esc(d.eleve.option)} (${esc(d.eleve.section)})</p>
+    <table><thead><tr><th>Matière</th><th class="c">Coef.</th><th class="c">Note / 20</th><th class="c">Note × Coef.</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr class="tot"><td>TOTAL</td><td class="c">—</td><td class="c">—</td><td class="c">${esc(d.totalObtenu)} / ${esc(d.totalMaximum)}</td></tr></tfoot></table>
+    <p class="meta">Pourcentage : <b>${esc(d.pourcentage)}%</b> · Rang : <b>${esc(d.rang)}</b> · Décision : <b>${esc(d.decision)}</b></p>
+    <div class="sig">Fait le ${new Date().toLocaleDateString('fr-FR')} — Secrétariat pédagogique Kotaschool</div>
+    <script>window.onload = function(){ window.print(); }<\/script>
+  </body></html>`);
+  w.document.close();
+}
+
+/** Télécharge le bulletin en fichier .pdf réel. */
+function downloadPdf(d: Detail) {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  doc.setFontSize(17); doc.setFont('helvetica', 'bold'); doc.setTextColor(124, 58, 237);
+  doc.text('Kotaschool', 14, 16);
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+  doc.text('Système éducatif · EPSP', 14, 21);
+  doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(15, 23, 42);
+  doc.text(`Bulletin — ${d.semestre.libelle}`, 196, 16, { align: 'right' });
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+  doc.text(`Année scolaire ${d.semestre.annee}`, 196, 21, { align: 'right' });
+
+  doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(15, 23, 42);
+  doc.text(`${d.eleve.nom} ${d.eleve.postnom ?? ''} ${d.eleve.prenom}`.trim(), 14, 32);
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+  doc.text(`Matricule : ${d.eleve.matricule}`, 14, 38);
+  doc.text(`Classe : ${d.eleve.classe} · ${d.eleve.option} (${d.eleve.section})`, 14, 43);
+
+  autoTable(doc, {
+    startY: 50,
+    head: [['Matière', 'Coef.', 'Note / 20', 'Note × Coef.']],
+    body: d.lignes.map((l) => [l.matiere, String(l.coefficient), String(l.note), String(l.noteBulletin)]),
+    foot: [['TOTAL', '', '', `${d.totalObtenu} / ${d.totalMaximum}`]],
+    theme: 'grid',
+    headStyles: { fillColor: [241, 245, 249], textColor: [30, 41, 59], fontStyle: 'bold' },
+    styles: { fontSize: 10, cellPadding: 2.5 },
+    footStyles: { fontStyle: 'bold' },
+  });
+  const finalY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 60;
+  doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+  doc.text(`Pourcentage : ${d.pourcentage}%    Rang : ${d.rang ?? '—'}    Décision : ${d.decision ?? '—'}`, 14, finalY + 8);
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
+  doc.text(`Fait le ${new Date().toLocaleDateString('fr-FR')} — Secrétariat pédagogique Kotaschool`, 14, finalY + 15);
+  const filename = `bulletin_${d.eleve.nom}_${d.eleve.prenom}_${d.semestre.libelle}.pdf`.replace(/\s+/g, '_');
+  doc.save(filename);
+}
 
 export default function ReportsPage() {
   const [semestres, setSemestres] = useState<Semestre[] | null>(null);
@@ -95,7 +171,7 @@ export default function ReportsPage() {
           ) : (
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-100 text-slate-600">
-                <tr><th className="p-3">Rang</th><th className="p-3">Matricule</th><th className="p-3">Élève</th><th className="p-3">Classe</th><th className="p-3">Total</th><th className="p-3">%</th><th className="p-3">Décision</th><th className="p-3"></th></tr>
+                <tr><th className="p-3">Rang</th><th className="p-3">Matricule</th><th className="p-3">Élève</th><th className="p-3">Classe</th><th className="p-3">Total</th><th className="p-3">%</th><th className="p-3">Décision</th></tr>
               </thead>
               <tbody>
                 {board.bulletins.map((b) => (
@@ -164,7 +240,8 @@ export default function ReportsPage() {
 
           <div className="mt-6 flex items-center justify-end gap-3 no-print">
             <button onClick={() => setDetail(null)} className="rounded-md border border-slate-300 px-4 py-2 text-sm">Fermer</button>
-            <button onClick={() => window.print()} className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white">Imprimer / PDF</button>
+            <button onClick={() => printBulletin(detail)} className="rounded-md border border-brand-600 px-4 py-2 text-sm font-medium text-brand-600">Imprimer le bulletin</button>
+            <button onClick={() => downloadPdf(detail)} className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white">Télécharger PDF</button>
           </div>
         </div>
       )}
