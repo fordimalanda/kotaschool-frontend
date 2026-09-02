@@ -1,4 +1,5 @@
 'use client';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/auth.store';
@@ -10,6 +11,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const path = usePathname();
   const current = links.find((l) => path.startsWith(l.href));
   const authorized = !current || !user || current.roles.includes(user.role);
+  useEffect(() => { if (!user) router.replace('/login'); }, [user, router]);
+  if (!user) return null;
   return (
     <div className="min-h-screen md:grid md:grid-cols-[250px_1fr]">
       <aside className="bg-slate-950 p-5 text-slate-100">
