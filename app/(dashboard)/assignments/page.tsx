@@ -34,10 +34,11 @@ export default function AssignmentsPage() {
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const f = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const f = new FormData(form);
     setBusy(true); setError(''); setMessage('');
     api.post('/administration/assignments', { idEnseignant: f.get('idEnseignant'), idClasseMatiere: f.get('idClasseMatiere'), idAnnee: f.get('idAnnee') })
-      .then(async () => { setMessage('Affectation enregistrée.'); e.currentTarget.reset(); await refresh(); })
+      .then(async () => { setMessage('Affectation enregistrée.'); form.reset(); await refresh(); })
       .catch((err: any) => setError(err.response?.data?.message?.toString?.() ?? 'Erreur lors de l’affectation.'))
       .finally(() => setBusy(false));
   }

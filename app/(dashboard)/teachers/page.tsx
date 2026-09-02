@@ -16,10 +16,11 @@ export default function TeachersPage() {
 
   function submitAdmin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const f = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const f = new FormData(form);
     setBusy(true); setError(''); setMessage('');
     api.post('/administration/admins', { email: f.get('email'), motDePasse: (f.get('motDePasse') as string) || undefined })
-      .then(() => { setMessage('Administrateur créé avec succès.'); e.currentTarget.reset(); })
+      .then(() => { setMessage('Administrateur créé avec succès.'); form.reset(); })
       .catch((err: any) => setError(err.response?.data?.message?.toString?.() ?? 'Erreur lors de la création.'))
       .finally(() => setBusy(false));
   }
@@ -33,14 +34,15 @@ export default function TeachersPage() {
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const f = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const f = new FormData(form);
     setBusy(true); setError(''); setMessage('');
     api.post('/administration/teachers', {
       nom: f.get('nom'), postnom: f.get('postnom') || undefined, prenom: f.get('prenom'),
       sexe: f.get('sexe'), telephone: f.get('telephone') || undefined, email: f.get('email'), motDePasse: (f.get('motDePasse') as string) || undefined,
     }).then(async () => {
       setMessage('Enseignant créé avec succès.');
-      e.currentTarget.reset();
+      form.reset();
       await refresh();
     }).catch((err: any) => setError(err.response?.data?.message?.toString?.() ?? 'Erreur lors de l’enregistrement.'))
       .finally(() => setBusy(false));
