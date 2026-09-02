@@ -45,6 +45,12 @@ export default function DashboardPage() {
       </div>
       {error && <p className="rounded bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
+      {user?.role === 'STUDENT' && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Stat label="Mes résultats et bulletins" value="Voir" href="/grades/my-notes" />
+        </div>
+      )}
+
       {user?.role === 'TEACHER' && (
         <>
           <div className="grid gap-4 md:grid-cols-3">
