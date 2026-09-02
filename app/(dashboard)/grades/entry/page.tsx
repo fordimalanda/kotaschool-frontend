@@ -89,7 +89,9 @@ export default function GradeEntryPage() {
     if (!grid) return;
     setBusy(true); setError(''); setMessage('');
     try {
-      await api.post('/notes/batch', { idEvaluation: grid.evaluation.id, notes: rows });
+      // On n'envoie que les champs attendus par l'API (idInscription, valeurNote, observation).
+      const payload = rows.map((r) => ({ idInscription: r.idInscription, valeurNote: r.valeurNote ?? undefined, observation: r.observation }));
+      await api.post('/notes/batch', { idEvaluation: grid.evaluation.id, notes: payload });
       await loadGrid(grid.evaluation.id);
       setMessage('Notes enregistrées en brouillon.');
     } catch { setError('Échec de l’enregistrement des notes.'); } finally { setBusy(false); }
