@@ -11,7 +11,6 @@ type PendingEvaluation = {
   periode: { libelle: string } | null;
   semestre: { libelle: string };
   typeEvaluation: { libelle: string };
-  _count: { notes: number };
 };
 type GridData = { evaluation: { id: string; libelle: string; maximum: number; statut: string; semestre: string; periode: string | null; typeEvaluation: string; matiere: string; classe: string; annee: string }; rows: GradeRow[] };
 
@@ -64,7 +63,7 @@ export default function ValidationPage() {
         <div className="overflow-x-auto rounded-lg bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-100 text-slate-600">
-              <tr><th className="p-3">Évaluation</th><th className="p-3">Classe / Matière</th><th className="p-3">Type</th><th className="p-3">Période</th><th className="p-3">Enseignant</th><th className="p-3">Notes</th></tr>
+              <tr><th className="p-3">Évaluation</th><th className="p-3">Classe / Matière</th><th className="p-3">Type</th><th className="p-3">Période</th><th className="p-3">Enseignant</th></tr>
             </thead>
             <tbody>
               {pending.map((ev) => (
@@ -74,7 +73,6 @@ export default function ValidationPage() {
                   <td className="p-3">{ev.typeEvaluation.libelle}</td>
                   <td className="p-3">{ev.periode?.libelle ?? 'Examen'}</td>
                   <td className="p-3">{ev.affectation.enseignant.nom} {ev.affectation.enseignant.prenom}</td>
-                  <td className="p-3">{ev._count.notes}</td>
                   <td className="p-3 whitespace-nowrap">
                     <button onClick={() => inspect(ev.id)} className="mr-2 rounded border border-brand-600 px-3 py-1 text-xs font-medium text-brand-600">Consulter</button>
                     <button onClick={() => validate(ev.id)} disabled={busy} className="rounded bg-brand-600 px-3 py-1 text-xs font-medium text-white disabled:opacity-50">Valider</button>

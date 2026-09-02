@@ -7,7 +7,7 @@ type Assignment = { id: string; annee: { libelle: string }; classeMatiere: { id:
 type Periode = { id: string; libelle: string };
 type Semestre = { id: string; libelle: string; annee: { libelle: string }; periodes: Periode[] };
 type TypeEval = { id: string; libelle: string };
-type Evaluation = { id: string; libelle: string; statut: string; dateEvaluation: string; affectation: { id: string; classeMatiere: { classe: { libelle: string }; matiere: { libelle: string } } }; periode: { libelle: string } | null; semestre: { libelle: string }; typeEvaluation: { libelle: string }; _count: { notes: number } };
+type Evaluation = { id: string; libelle: string; statut: string; dateEvaluation: string; affectation: { id: string; classeMatiere: { classe: { libelle: string }; matiere: { libelle: string } } }; periode: { libelle: string } | null; semestre: { libelle: string }; typeEvaluation: { libelle: string } };
 type Ctx = { assignments: Assignment[]; semestres: Semestre[]; typesEvaluation: TypeEval[]; evaluations: Evaluation[] };
 type GridData = { evaluation: { id: string; libelle: string; maximum: number; statut: string; semestre: string; periode: string | null; typeEvaluation: string; matiere: string; classe: string; annee: string }; rows: GradeRow[] };
 
