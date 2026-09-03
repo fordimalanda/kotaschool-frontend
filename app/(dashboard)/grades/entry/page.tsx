@@ -3,13 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  Edit3,
-  Save,
-  Send,
-  CheckCircle2,
-  AlertTriangle,
-  RotateCcw,
-  AlertCircle,
+  Edit3, Save, Send, CheckCircle2, AlertTriangle, RotateCcw, AlertCircle,
 } from 'lucide-react';
 import { api } from '@/lib/api/client';
 import { GradeTable, type GradeRow } from '@/components/grades/grade-table';
@@ -17,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type Assignment = {
   id: string;
@@ -34,6 +30,7 @@ type Semestre = {
   annee: { libelle: string };
   periodes: { id: string; libelle: string }[];
 };
+
 type TypeEval = { id: string; libelle: string };
 
 type Evaluation = {
@@ -76,6 +73,26 @@ type GridData = {
   rows: GradeRow[];
 };
 
+// ─── Period slot definition ───────────────────────────────────────────────────
+
+type PeriodSlot = {
+  key: string;
+  label: string;
+  displayLabel: string;   // shown in the grid header
+  semestreIndex: number;  // 0 = S1, 1 = S2
+  periodeIndex: number | null; // null = examen
+  semGroupLabel: string;
+};
+
+const SLOTS: PeriodSlot[] = [
+  { key: 'p1',    label: 'P1 - Cotes', displayLabel: 'Periode 1',  semestreIndex: 0, periodeIndex: 0,    semGroupLabel: '1er Semestre' },
+  { key: 'p2',    label: 'P2 - Cotes', displayLabel: 'Periode 2',  semestreIndex: 0, periodeIndex: 1,    semGroupLabel: '1er Semestre' },
+  { key: 'ex1',   label: 'Examen',     displayLabel: 'Examen S1',  semestreIndex: 0, periodeIndex: null, semGroupLabel: '1er Semestre' },
+  { key: 'p3',    label: 'P3 - Cotes', displayLabel: 'Periode 3',  semestreIndex: 1, periodeIndex: 0,    semGroupLabel: '2eme Semestre' },
+  { key: 'p4',    label: 'P4 - Cotes', displayLabel: 'Periode 4',  semestreIndex: 1, periodeIndex: 1,    semGroupLabel: '2eme Semestre' },
+  { key: 'ex2',   label: 'Examen',     displayLabel: 'Examen S2',  semestreIndex: 1, periodeIndex: null, semGroupLabel: '2eme Semestre' },
+];
+
 const STATUT_BADGE: Record<string, 'warning' | 'sky' | 'success'> = {
   BROUILLON: 'warning',
   SOUMISE: 'sky',
@@ -85,36 +102,25 @@ const STATUT_BADGE: Record<string, 'warning' | 'sky' | 'success'> = {
 const STATUT_LABEL: Record<string, string> = {
   BROUILLON: 'Brouillon',
   SOUMISE: 'Soumise',
-  VALIDEE: 'Valid&eacute;e',
+  VALIDEE: 'Validee',
 };
 
-function getPeriodLabel(ev: Evaluation, semIndex: number): string {
-  const lib = ev.libelle.toLowerCase();
-  const per = (ev.periode?.libelle ?? '').toLowerCase();
-  if (!ev.periode || lib.includes('exam') || per.includes('exam')) {
-    return 'Examen';
-  }
-  if (semIndex === 0) {
-    if (per.includes('1') || lib.includes('p1')) return 'P1 - Cotes';
-    if (per.includes('2') || lib.includes('p2')) return 'P2 - Cotes';
-  } else {
-    if (per.includes('3') || lib.includes('p3')) return 'P3 - Cotes';
-    if (per.includes('4') || lib.includes('p4')) return 'P4 - Cotes';
-  }
-  return ev.libelle;
-}
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function GradeEntryPage() {
   const [ctx, setCtx] = useState<Ctx | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+
   const [assignmentId, setAssignmentId] = useState('');
+  const [selectedSlotKey, setSelectedSlotKey] = useState('');
   const [evaluationId, setEvaluationId] = useState('');
   const [grid, setGrid] = useState<GridData | null>(null);
   const [rows, setRows] = useState<GradeRow[]>([]);
   const [busy, setBusy] = useState(false);
   const [correctionMode, setCorrectionMode] = useState(false);
+
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -134,14 +140,33 @@ export default function GradeEntryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Evaluations for current assignment
   const evals = ctx?.evaluations.filter((e) => e.affectation.id === assignmentId) ?? [];
-  const sem0Label = ctx?.semestres[0]?.libelle ?? '';
-  const sem1Label = ctx?.semestres[1]?.libelle ?? '__NONE__';
-  const s1Evals = evals.filter((ev) => ev.semestre.libelle === sem0Label);
-  const s2Evals = evals.filter((ev) => ev.semestre.libelle === sem1Label);
-  const fallbackEvals = evals.filter(
-    (ev) => ev.semestre.libelle !== sem0Label && ev.semestre.libelle !== sem1Label
-  );
+
+  // Find an existing evaluation for a given slot
+  function findEvalForSlot(slot: PeriodSlot): Evaluation | null {
+    if (!ctx) return null;
+    const sem = ctx.semestres[slot.semestreIndex];
+    if (!sem) return null;
+
+    for (const ev of evals) {
+      if (ev.semestre.libelle !== sem.libelle) continue;
+
+      if (slot.periodeIndex === null) {
+        // Examen: periode is null OR libelle contains "exam"
+        if (!ev.periode || ev.periode.libelle.toLowerCase().includes('exam')) {
+          return ev;
+        }
+      } else {
+        const expectedPeriode = sem.periodes[slot.periodeIndex];
+        if (!expectedPeriode) continue;
+        if (ev.periode && ev.periode.libelle === expectedPeriode.libelle) {
+          return ev;
+        }
+      }
+    }
+    return null;
+  }
 
   const isValidee = !!grid && grid.evaluation.statut === 'VALIDEE';
   const isBrouillon = !!grid && grid.evaluation.statut === 'BROUILLON';
@@ -150,6 +175,7 @@ export default function GradeEntryPage() {
   async function refreshContext() {
     const { data } = await api.get<Ctx>('/notes/context');
     setCtx((prev) => (prev ? { ...prev, evaluations: data.evaluations } : data));
+    return data;
   }
 
   async function loadGrid(id: string) {
@@ -160,15 +186,69 @@ export default function GradeEntryPage() {
     setCorrectionMode(false);
   }
 
-  function changeEvaluation(id: string) {
-    setEvaluationId(id);
+  async function handleSlotChange(slotKey: string) {
+    setSelectedSlotKey(slotKey);
     setGrid(null);
+    setEvaluationId('');
     setCorrectionMode(false);
-    if (id) loadGrid(id).catch(() => setError('Grille indisponible.'));
+    setError('');
+    setMessage('');
+
+    if (!slotKey || !ctx) return;
+
+    const slot = SLOTS.find((s) => s.key === slotKey);
+    if (!slot) return;
+
+    const sem = ctx.semestres[slot.semestreIndex];
+    if (!sem) {
+      setError("Semestre introuvable dans le contexte.");
+      return;
+    }
+
+    // Check if evaluation already exists
+    const existing = findEvalForSlot(slot);
+    if (existing) {
+      setEvaluationId(existing.id);
+      await loadGrid(existing.id).catch(() => setError('Grille indisponible.'));
+      return;
+    }
+
+    // Auto-create the evaluation for this period slot
+    setBusy(true);
+    try {
+      const periodeId = slot.periodeIndex !== null
+        ? (sem.periodes[slot.periodeIndex]?.id ?? undefined)
+        : undefined;
+
+      const libelle = slot.periodeIndex !== null
+        ? `${slot.label} - ${sem.periodes[slot.periodeIndex]?.libelle ?? ''}`
+        : `Examen - ${sem.libelle}`;
+
+      const typeId = ctx.typesEvaluation[0]?.id;
+
+      const { data } = await api.post('/notes/evaluations', {
+        libelle,
+        idAffectation: assignmentId,
+        idSemestre: sem.id,
+        idPeriode: periodeId,
+        idTypeEvaluation: typeId,
+        dateEvaluation: new Date().toISOString().slice(0, 10),
+      });
+
+      await refreshContext();
+      setEvaluationId(data.id);
+      await loadGrid(data.id);
+      setMessage('Periode creee. Vous pouvez saisir les cotes.');
+    } catch {
+      setError("Impossible de creer la periode. Verifiez votre connexion.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   function changeAssignment(id: string) {
     setAssignmentId(id);
+    setSelectedSlotKey('');
     setEvaluationId('');
     setGrid(null);
     setCorrectionMode(false);
@@ -188,13 +268,13 @@ export default function GradeEntryPage() {
       await api.post('/notes/batch', { idEvaluation: grid.evaluation.id, notes: payload });
       await loadGrid(grid.evaluation.id);
       if (isValidee) {
-        setMessage('Corrections enregistrees et bulletins recalcules automatiquement.');
+        setMessage('Corrections enregistrees et bulletins recalcules.');
         setCorrectionMode(false);
       } else {
-        setMessage('Notes sauvegardees en brouillon avec succes.');
+        setMessage('Cotes sauvegardees en brouillon.');
       }
     } catch {
-      setError("Echec de l'enregistrement des notes.");
+      setError("Echec de l'enregistrement.");
     } finally {
       setBusy(false);
     }
@@ -209,9 +289,9 @@ export default function GradeEntryPage() {
       await api.post(`/notes/evaluations/${grid.evaluation.id}/soumettre`);
       await refreshContext();
       await loadGrid(grid.evaluation.id);
-      setMessage('Evaluation soumise avec succes au Conseil Pedagogique pour validation.');
+      setMessage('Cotes soumises avec succes au Conseil Pedagogique.');
     } catch {
-      setError("Soumission impossible : assurez-vous qu'au moins une note est saisie.");
+      setError("Soumission impossible : au moins une cote doit etre saisie.");
     } finally {
       setBusy(false);
     }
@@ -222,7 +302,7 @@ export default function GradeEntryPage() {
       <div className="flex h-64 items-center justify-center">
         <div className="flex flex-col items-center gap-2 text-slate-500">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-600 border-t-transparent" />
-          <span className="text-xs font-medium">Chargement du contexte...</span>
+          <span className="text-xs font-medium">Chargement...</span>
         </div>
       </div>
     );
@@ -231,10 +311,16 @@ export default function GradeEntryPage() {
   if (!ctx) {
     return (
       <div className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
-        {error || 'Contexte de saisie indisponible.'}
+        {error || 'Contexte indisponible.'}
       </div>
     );
   }
+
+  // Build visible slots (only for semestres that exist in ctx)
+  const s1Slots = SLOTS.filter((s) => s.semestreIndex === 0 && ctx.semestres[0]);
+  const s2Slots = SLOTS.filter((s) => s.semestreIndex === 1 && ctx.semestres[1]);
+
+  const currentSlot = SLOTS.find((s) => s.key === selectedSlotKey) ?? null;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -246,7 +332,7 @@ export default function GradeEntryPage() {
             Saisie &amp; Correction des Notes
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-slate-500">
-            Enregistrez les cotes par periode et soumettez-les au Conseil Pedagogique.
+            Choisissez votre classe, selectionnez la periode et saisissez les cotes.
           </p>
         </div>
         <Badge variant="secondary" className="self-start sm:self-auto font-mono">
@@ -257,6 +343,7 @@ export default function GradeEntryPage() {
       {/* Filter Bar */}
       <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-soft-sm">
         <div className="grid gap-4 sm:grid-cols-2">
+          {/* Affectation */}
           <div className="space-y-1.5">
             <Label>Classe &amp; Matiere (Affectation)</Label>
             <Select
@@ -274,58 +361,55 @@ export default function GradeEntryPage() {
             </Select>
           </div>
 
+          {/* Period slot selector */}
           <div className="space-y-1.5">
             <Label>Saisie de Cotes (Periode)</Label>
             <Select
-              value={evaluationId}
-              onChange={(e) => changeEvaluation(e.target.value)}
+              value={selectedSlotKey}
+              onChange={(e) => handleSlotChange(e.target.value)}
+              disabled={busy}
             >
               <option value="">-- Choisir une periode --</option>
-              {s1Evals.length > 0 && (
+
+              {s1Slots.length > 0 && (
                 <optgroup label="1er Semestre">
-                  {s1Evals.map((ev) => (
-                    <option key={ev.id} value={ev.id}>
-                      {getPeriodLabel(ev, 0)}
+                  {s1Slots.map((slot) => (
+                    <option key={slot.key} value={slot.key}>
+                      {slot.label}
                     </option>
                   ))}
                 </optgroup>
               )}
-              {s2Evals.length > 0 && (
+
+              {s2Slots.length > 0 && (
                 <optgroup label="2eme Semestre">
-                  {s2Evals.map((ev) => (
-                    <option key={ev.id} value={ev.id}>
-                      {getPeriodLabel(ev, 1)}
+                  {s2Slots.map((slot) => (
+                    <option key={slot.key} value={slot.key}>
+                      {slot.label}
                     </option>
                   ))}
                 </optgroup>
               )}
-              {s1Evals.length === 0 && s2Evals.length === 0 && fallbackEvals.map((ev) => (
-                <option key={ev.id} value={ev.id}>
-                  {ev.libelle} - {STATUT_LABEL[ev.statut] ?? ev.statut}
-                </option>
-              ))}
             </Select>
           </div>
         </div>
       </div>
 
       {/* Grade Grid Section */}
-      {grid && (
+      {grid && currentSlot && (
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-soft-sm">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-slate-900">
-                  {grid.evaluation.libelle}
+                  {currentSlot.label} &mdash; {grid.evaluation.matiere}
                 </h3>
                 <Badge variant={STATUT_BADGE[grid.evaluation.statut] ?? 'secondary'}>
                   {STATUT_LABEL[grid.evaluation.statut] ?? grid.evaluation.statut}
                 </Badge>
               </div>
               <p className="text-xs text-slate-500">
-                {grid.evaluation.classe} - {grid.evaluation.matiere} - {grid.evaluation.semestre}
-                {grid.evaluation.periode ? ` - ${grid.evaluation.periode}` : ' - Examen'}{' '}
-                - {grid.evaluation.typeEvaluation} - Annee {grid.evaluation.annee}
+                {grid.evaluation.classe} &middot; {currentSlot.semGroupLabel} &middot; {grid.evaluation.annee}
               </p>
             </div>
           </div>
@@ -337,11 +421,9 @@ export default function GradeEntryPage() {
                   <CheckCircle2 className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-amber-900">
-                    Evaluation Validee Officiellement
-                  </p>
+                  <p className="text-sm font-semibold text-amber-900">Cotes Validees Officiellement</p>
                   <p className="text-xs text-amber-700">
-                    Vous pouvez corriger une note en cas d&apos;erreur. Les bulletins seront mis a jour automatiquement.
+                    Vous pouvez corriger une cote en cas d&apos;erreur. Les bulletins seront mis a jour automatiquement.
                   </p>
                 </div>
               </div>
@@ -361,7 +443,7 @@ export default function GradeEntryPage() {
             <div className="flex items-center gap-3 rounded-2xl border border-orange-200 bg-orange-50/80 p-4 text-xs font-medium text-orange-900 shadow-soft-sm">
               <AlertTriangle className="h-4 w-4 text-orange-600 shrink-0" />
               <span>
-                <strong>Mode correction actif :</strong> modifiez les notes dans le tableau ci-dessous, puis cliquez sur{' '}
+                <strong>Mode correction actif :</strong> modifiez les cotes puis cliquez sur{' '}
                 <strong>Enregistrer les corrections</strong> pour recalculer les bulletins.
               </span>
             </div>
