@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import {
@@ -86,7 +86,7 @@ function printBulletin(d: Detail) {
   const mentionColor = pct >= 50 ? '#16a34a' : '#dc2626';
 
   w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8">
-<title>Bulletin — ${esc(d.eleve.nom)} ${esc(d.eleve.prenom)}</title>
+<title>Bulletin â€” ${esc(d.eleve.nom)} ${esc(d.eleve.prenom)}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;color:#0f172a;background:#fff}
@@ -140,12 +140,12 @@ function printBulletin(d: Detail) {
 <div class="page">
   <div class="header">
     <div>
-      <div class="school-name">Kotaschool</div>
-      <div class="school-sub">Système Éducatif · EPSP — République Démocratique du Congo</div>
+      <div class="school-name">Complexe Scolaire Sainte Famille</div>
+      <div class="school-sub">Système Ã‰ducatif Â· EPSP â€” République Démocratique du Congo</div>
     </div>
     <div>
       <div class="doc-badge">Bulletin Officiel</div>
-      <div class="doc-sem">${esc(d.semestre.libelle)} &nbsp;·&nbsp; Année ${esc(d.semestre.annee)}</div>
+      <div class="doc-sem">${esc(d.semestre.libelle)} &nbsp;Â·&nbsp; Année ${esc(d.semestre.annee)}</div>
     </div>
   </div>
   <div class="accent-bar"></div>
@@ -160,9 +160,9 @@ function printBulletin(d: Detail) {
 
     <div class="section-label">Résultats par Matière</div>
     <table>
-      <thead><tr><th>Matière</th><th class="c">Coef.</th><th class="c">Note / 20</th><th class="c">Note × Coef.</th></tr></thead>
+      <thead><tr><th>Matière</th><th class="c">Coef.</th><th class="c">Note / 20</th><th class="c">Note Ã— Coef.</th></tr></thead>
       <tbody>${rows}</tbody>
-      <tfoot><tr><td><b>TOTAL GÉNÉRAL</b></td><td class="c">—</td><td class="c">—</td><td class="c">${esc(d.totalObtenu)} / ${esc(d.totalMaximum)}</td></tr></tfoot>
+      <tfoot><tr><td><b>TOTAL GÃ‰NÃ‰RAL</b></td><td class="c">â€”</td><td class="c">â€”</td><td class="c">${esc(d.totalObtenu)} / ${esc(d.totalMaximum)}</td></tr></tfoot>
     </table>
 
     <div class="result-box">
@@ -170,20 +170,20 @@ function printBulletin(d: Detail) {
       <div class="divider"></div>
       <div class="r-item"><div class="r-lbl">Pourcentage</div><div class="r-val">${esc(d.pourcentage)}%</div></div>
       <div class="divider"></div>
-      <div class="r-item"><div class="r-lbl">Rang de classe</div><div class="r-val">${esc(d.rang ?? '—')}</div></div>
+      <div class="r-item"><div class="r-lbl">Rang de classe</div><div class="r-val">${esc(d.rang ?? 'â€”')}</div></div>
       <div class="divider"></div>
       <div class="r-item"><div class="r-lbl">Décision du Jury</div><div class="r-val mention">${mention}</div></div>
     </div>
 
     <div class="sig">
-      <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Le Chef d'Établissement</div></div>
+      <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Le Chef d'Ã‰tablissement</div></div>
       <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Le Secrétaire Pédagogique</div></div>
       <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Le Titulaire de Classe</div></div>
     </div>
 
     <div class="footer">
-      <span>Généré le ${new Date().toLocaleDateString('fr-FR')} par Kotaschool</span>
-      <span>Document officiel — Ne pas reproduire sans autorisation</span>
+      <span>Généré le ${new Date().toLocaleDateString('fr-FR')} par Complexe Scolaire Sainte Famille</span>
+      <span>Document officiel â€” Ne pas reproduire sans autorisation</span>
     </div>
   </div>
 </div>
@@ -199,7 +199,7 @@ function downloadPdf(d: Detail) {
   const mention = pct >= 80 ? 'Grande Distinction' : pct >= 70 ? 'Distinction' : pct >= 60 ? 'Satisfaction' : pct >= 50 ? 'Réussi' : 'Non Réussi';
   const isSuccess = pct >= 50;
 
-  // ── Header background ──
+  // â”€â”€ Header background â”€â”€
   doc.setFillColor(30, 58, 138);
   doc.rect(0, 0, W, 26, 'F');
 
@@ -207,11 +207,11 @@ function downloadPdf(d: Detail) {
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  doc.text('Kotaschool', 14, 11);
+  doc.text('Complexe Scolaire Sainte Famille', 14, 11);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(186, 230, 253);
-  doc.text('Système Éducatif · EPSP — République Démocratique du Congo', 14, 17);
+  doc.text('Système Ã‰ducatif Â· EPSP â€” République Démocratique du Congo', 14, 17);
 
   // Bulletin title right
   doc.setFontSize(11);
@@ -221,13 +221,13 @@ function downloadPdf(d: Detail) {
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(186, 230, 253);
-  doc.text(`${d.semestre.libelle}  ·  Année ${d.semestre.annee}`, W - 14, 17, { align: 'right' });
+  doc.text(`${d.semestre.libelle}  Â·  Année ${d.semestre.annee}`, W - 14, 17, { align: 'right' });
 
   // Accent line
   doc.setFillColor(59, 130, 246);
   doc.rect(0, 26, W, 1.2, 'F');
 
-  // ── Student info box ──
+  // â”€â”€ Student info box â”€â”€
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(14, 31, W - 28, 24, 2.5, 2.5, 'FD');
@@ -252,18 +252,18 @@ function downloadPdf(d: Detail) {
   doc.text(d.eleve.classe, valueCol2, 39);
   doc.text(`${d.eleve.option} (${d.eleve.section})`, valueCol2, 47);
 
-  // ── Section label ──
+  // â”€â”€ Section label â”€â”€
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(30, 58, 138);
-  doc.text('RÉSULTATS PAR MATIÈRE', 14, 62);
+  doc.text('RÃ‰SULTATS PAR MATIÃˆRE', 14, 62);
 
-  // ── Grades table ──
+  // â”€â”€ Grades table â”€â”€
   autoTable(doc, {
     startY: 65,
-    head: [['Matière', 'Coef.', 'Note / 20', 'Note × Coef.']],
+    head: [['Matière', 'Coef.', 'Note / 20', 'Note Ã— Coef.']],
     body: d.lignes.map((l) => [l.matiere, String(l.coefficient), String(l.note), String(l.noteBulletin)]),
-    foot: [['TOTAL GÉNÉRAL', '—', '—', `${d.totalObtenu} / ${d.totalMaximum}`]],
+    foot: [['TOTAL GÃ‰NÃ‰RAL', 'â€”', 'â€”', `${d.totalObtenu} / ${d.totalMaximum}`]],
     theme: 'grid',
     headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5, halign: 'center' },
     columnStyles: {
@@ -280,7 +280,7 @@ function downloadPdf(d: Detail) {
 
   const finalY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 100;
 
-  // ── Result summary box ──
+  // â”€â”€ Result summary box â”€â”€
   const boxY = finalY + 5;
   doc.setFillColor(240, 249, 255);
   doc.setDrawColor(186, 230, 253);
@@ -293,7 +293,7 @@ function downloadPdf(d: Detail) {
   const items = [
     { label: 'Total obtenu', value: `${d.totalObtenu} / ${d.totalMaximum}` },
     { label: 'Pourcentage', value: `${d.pourcentage}%` },
-    { label: 'Rang de classe', value: String(d.rang ?? '—') },
+    { label: 'Rang de classe', value: String(d.rang ?? 'â€”') },
     { label: 'Décision du Jury', value: mention },
   ];
   const colW = (W - 28) / items.length;
@@ -319,9 +319,9 @@ function downloadPdf(d: Detail) {
     }
   });
 
-  // ── Signature lines ──
+  // â”€â”€ Signature lines â”€â”€
   const sigY = boxY + 30;
-  const sigLabels = ["Le Chef d'Établissement", 'Le Secrétaire Pédagogique', 'Le Titulaire de Classe'];
+  const sigLabels = ["Le Chef d'Ã‰tablissement", 'Le Secrétaire Pédagogique', 'Le Titulaire de Classe'];
   const sigW = (W - 28) / 3;
   sigLabels.forEach((label, i) => {
     const sx = 14 + sigW * i + sigW / 2;
@@ -334,15 +334,15 @@ function downloadPdf(d: Detail) {
     doc.text(label, sx, sigY + 21, { align: 'center' });
   });
 
-  // ── Footer ──
+  // â”€â”€ Footer â”€â”€
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(0.25);
   doc.line(14, 284, W - 14, 284);
   doc.setFontSize(6.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(148, 163, 184);
-  doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')} par Kotaschool`, 14, 288);
-  doc.text('Document officiel — Ne pas reproduire sans autorisation', W - 14, 288, { align: 'right' });
+  doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')} par Complexe Scolaire Sainte Famille`, 14, 288);
+  doc.text('Document officiel â€” Ne pas reproduire sans autorisation', W - 14, 288, { align: 'right' });
 
   const filename = `bulletin_${d.eleve.nom}_${d.eleve.prenom}_${d.semestre.libelle}.pdf`.replace(/\s+/g, '_');
   doc.save(filename);
@@ -431,7 +431,7 @@ export default function ReportsPage() {
 
   return (
     <section className="space-y-6 animate-fade-in">
-      {/* ── Page Header ── */}
+      {/* â”€â”€ Page Header â”€â”€ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
@@ -459,7 +459,7 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* ── Filter & Calculation Bar ── */}
+      {/* â”€â”€ Filter & Calculation Bar â”€â”€ */}
       <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-soft-sm">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="w-full sm:w-80 space-y-1.5">
@@ -468,7 +468,7 @@ export default function ReportsPage() {
               value={semestreId}
               onChange={(e) => selectSemestre(e.target.value)}
             >
-              {semestres === null && <option>Chargement…</option>}
+              {semestres === null && <option>Chargementâ€¦</option>}
               {semestres?.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.libelle} ({s.annee.libelle})
@@ -489,7 +489,7 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* ── Main Board Table ── */}
+      {/* â”€â”€ Main Board Table â”€â”€ */}
       {board && (
         <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-soft-sm">
           <div className="flex items-center justify-between border-b border-slate-100 p-4 sm:p-5 bg-slate-50/50">
@@ -498,7 +498,7 @@ export default function ReportsPage() {
                 {board.semestre.libelle}
               </h3>
               <p className="text-xs text-slate-500">
-                Année scolaire {board.semestre.annee} · {board.bulletins.length}{' '}
+                Année scolaire {board.semestre.annee} Â· {board.bulletins.length}{' '}
                 élève(s) classé(s)
               </p>
             </div>
@@ -507,8 +507,8 @@ export default function ReportsPage() {
 
           {board.bulletins.length === 0 ? (
             <div className="p-8 text-center text-sm text-slate-500">
-              Aucun bulletin calculé pour ce semestre. Cliquez sur « Recalculer le
-              classement ».
+              Aucun bulletin calculé pour ce semestre. Cliquez sur Â« Recalculer le
+              classement Â».
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -517,7 +517,7 @@ export default function ReportsPage() {
                   <tr>
                     <th className="p-3.5 text-center w-20">Rang</th>
                     <th className="p-3.5">Matricule</th>
-                    <th className="p-3.5">Élève</th>
+                    <th className="p-3.5">Ã‰lève</th>
                     <th className="p-3.5">Classe</th>
                     <th className="p-3.5">Total Obtenu</th>
                     <th className="p-3.5">% Obtenu</th>
@@ -551,7 +551,7 @@ export default function ReportsPage() {
                             </span>
                           ) : (
                             <span className="text-slate-600">
-                              {b.rang ?? '—'}
+                              {b.rang ?? 'â€”'}
                             </span>
                           )}
                         </td>
@@ -586,7 +586,7 @@ export default function ReportsPage() {
                             variant={isPassed ? 'success' : 'destructive'}
                             className="text-[11px]"
                           >
-                            {b.decision ?? '—'}
+                            {b.decision ?? 'â€”'}
                           </Badge>
                         </td>
                         <td className="p-3.5 text-right no-print whitespace-nowrap">
@@ -610,7 +610,7 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* ── Official Bulletin Preview Card ── */}
+      {/* â”€â”€ Official Bulletin Preview Card â”€â”€ */}
       {detail && (
         <div className="print-area overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-soft-lg animate-scale-in">
           {/* Header */}
@@ -621,16 +621,16 @@ export default function ReportsPage() {
               </div>
               <div>
                 <h2 className="text-xl font-bold tracking-tight text-brand-600">
-                  Kotaschool
+                  Complexe Scolaire Sainte Famille
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Système Éducatif · EPSP (RDC)
+                  Système Ã‰ducatif Â· EPSP (RDC)
                 </p>
               </div>
             </div>
             <div className="text-right">
               <p className="text-base font-bold text-slate-900">
-                Bulletin Officiel · {detail.semestre.libelle}
+                Bulletin Officiel Â· {detail.semestre.libelle}
               </p>
               <p className="text-xs text-slate-500">
                 Année Scolaire {detail.semestre.annee}
@@ -642,7 +642,7 @@ export default function ReportsPage() {
           <div className="mt-6 grid gap-4 rounded-xl bg-slate-50 p-4 text-xs sm:text-sm md:grid-cols-3">
             <div>
               <span className="text-slate-400 block text-[11px] uppercase font-semibold">
-                Élève
+                Ã‰lève
               </span>
               <strong className="text-slate-900 font-bold text-sm">
                 {detail.eleve.nom} {detail.eleve.postnom ?? ''}{' '}
@@ -662,7 +662,7 @@ export default function ReportsPage() {
                 Classe & Filière
               </span>
               <strong className="text-slate-800">
-                {detail.eleve.classe} · {detail.eleve.option} (
+                {detail.eleve.classe} Â· {detail.eleve.option} (
                 {detail.eleve.section})
               </strong>
             </div>
@@ -676,7 +676,7 @@ export default function ReportsPage() {
                   <th className="p-3">Matière</th>
                   <th className="p-3 text-center">Coefficient</th>
                   <th className="p-3 text-center">Note / 20</th>
-                  <th className="p-3 text-center">Note × Coef.</th>
+                  <th className="p-3 text-center">Note Ã— Coef.</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -693,9 +693,9 @@ export default function ReportsPage() {
               </tbody>
               <tfoot className="border-t-2 border-slate-900 bg-slate-50 font-bold">
                 <tr>
-                  <td className="p-3">TOTAL GÉNÉRAL</td>
-                  <td className="p-3 text-center">—</td>
-                  <td className="p-3 text-center">—</td>
+                  <td className="p-3">TOTAL GÃ‰NÃ‰RAL</td>
+                  <td className="p-3 text-center">â€”</td>
+                  <td className="p-3 text-center">â€”</td>
                   <td className="p-3 text-center text-sm text-brand-700 font-extrabold">
                     {detail.totalObtenu} / {detail.totalMaximum}
                   </td>
@@ -710,7 +710,7 @@ export default function ReportsPage() {
                         </strong>
                       </span>
                       <span>
-                        Rang : <strong>{detail.rang ?? '—'}</strong>
+                        Rang : <strong>{detail.rang ?? 'â€”'}</strong>
                       </span>
                       <span>
                         Décision du Jury :{' '}
@@ -721,7 +721,7 @@ export default function ReportsPage() {
                               : 'destructive'
                           }
                         >
-                          {detail.decision ?? '—'}
+                          {detail.decision ?? 'â€”'}
                         </Badge>
                       </span>
                     </div>
@@ -734,8 +734,8 @@ export default function ReportsPage() {
           {/* Signatures & Actions */}
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200 pt-5 text-xs text-slate-500">
             <p>
-              Fait le {new Date().toLocaleDateString('fr-FR')} — Secrétariat
-              Pédagogique Kotaschool
+              Fait le {new Date().toLocaleDateString('fr-FR')} â€” Secrétariat
+              Pédagogique Complexe Scolaire Sainte Famille
             </p>
 
             <div className="flex items-center gap-3 no-print">
@@ -766,3 +766,4 @@ export default function ReportsPage() {
     </section>
   );
 }
+

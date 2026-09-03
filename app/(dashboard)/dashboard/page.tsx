@@ -219,17 +219,6 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
-            {user?.role === 'TEACHER' && (
-              <Button
-                asChild
-                className="bg-white text-brand-900 hover:bg-slate-100 shadow-soft-md"
-              >
-                <Link href="/grades/entry">
-                  <Edit3 className="mr-2 h-4 w-4" />
-                  Saisir les notes
-                </Link>
-              </Button>
-            )}
 
             {(user?.role === 'ADMIN' || user?.role === 'SECRETARY') && (
               <Button
@@ -280,61 +269,9 @@ export default function DashboardPage() {
       )}
 
       {/* ── KPI Stat Cards ── */}
-      {user?.role === 'STUDENT' && (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <StatCard
-            title="Mes notes en direct"
-            value="Consulter"
-            description="Notes par période et examens en temps réel"
-            icon={TrendingUp}
-            href="/grades/my-scores"
-            colorTheme="brand"
-          />
-          <StatCard
-            title="Bulletins officiels"
-            value="Palmarès"
-            description="Synthèses semestrielles, rang et décision EPSP"
-            icon={Award}
-            href="/grades/my-notes"
-            colorTheme="violet"
-          />
-          <StatCard
-            title="Statut de l'élève"
-            value="Inscrit"
-            description="Année scolaire 2026–2027 validée"
-            icon={CheckCircle2}
-            colorTheme="emerald"
-          />
-        </div>
-      )}
 
-      {user?.role === 'TEACHER' && (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <StatCard
-            title="Mes affectations"
-            value={assignments?.length ?? 0}
-            description="Classes et matières sous votre responsabilité"
-            icon={Calendar}
-            href="/grades/entry"
-            colorTheme="brand"
-          />
-          <StatCard
-            title="Saisie des notes"
-            value="Accéder"
-            description="Évaluations formatives et examens"
-            icon={Edit3}
-            href="/grades/entry"
-            colorTheme="emerald"
-          />
-          <StatCard
-            title="Statut Enseignant"
-            value="Actif"
-            description="Attribution pédagogique 2026–2027 validée"
-            icon={CheckCircle2}
-            colorTheme="sky"
-          />
-        </div>
-      )}
+
+
 
       {(user?.role === 'ADMIN' || user?.role === 'SECRETARY') && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -526,18 +463,6 @@ export default function DashboardPage() {
             </Link>
           )}
 
-          {user?.role === 'TEACHER' && (
-            <Link
-              href="/grades/entry"
-              className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-emerald-600">
-                <Edit3 className="h-4 w-4" />
-              </div>
-              <span>Saisie des Notes</span>
-            </Link>
-          )}
-
           {user?.role === 'PEDAGOGICAL_COUNCIL' && (
             <Link
               href="/grades/validation"
@@ -548,29 +473,6 @@ export default function DashboardPage() {
               </div>
               <span>Validation des Notes</span>
             </Link>
-          )}
-
-          {user?.role === 'STUDENT' && (
-            <>
-              <Link
-                href="/grades/my-scores"
-                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-emerald-600">
-                  <TrendingUp className="h-4 w-4" />
-                </div>
-                <span>Notes en direct</span>
-              </Link>
-              <Link
-                href="/grades/my-notes"
-                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-violet-600">
-                  <Award className="h-4 w-4" />
-                </div>
-                <span>Mes Bulletins</span>
-              </Link>
-            </>
           )}
 
           {(user?.role === 'ADMIN' || user?.role === 'SECRETARY') && (
