@@ -441,65 +441,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* ── Quick Actions Grid ── */}
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-soft-sm">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-4 flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-brand-600" />
-          Raccourcis & Modules Fréquents
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {(user?.role === 'ADMIN' ||
-            user?.role === 'SECRETARY' ||
-            user?.role === 'PEDAGOGICAL_COUNCIL') && (
-            <Link
-              href="/reports"
-              className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-brand-600">
-                <FileSpreadsheet className="h-4 w-4" />
-              </div>
-              <span>Palmarès & Bulletins</span>
-            </Link>
-          )}
-
-          {user?.role === 'PEDAGOGICAL_COUNCIL' && (
-            <Link
-              href="/grades/validation"
-              className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-amber-600">
-                <ShieldCheck className="h-4 w-4" />
-              </div>
-              <span>Validation des Notes</span>
-            </Link>
-          )}
-
-          {(user?.role === 'ADMIN' || user?.role === 'SECRETARY') && (
-            <>
-              <Link
-                href="/academic"
-                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-indigo-600">
-                  <Layers className="h-4 w-4" />
-                </div>
-                <span>Structure & Matières</span>
-              </Link>
-
-              <Link
-                href="/students"
-                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-sky-600">
-                  <Users className="h-4 w-4" />
-                </div>
-                <span>Registre des Élèves</span>
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
     </div>
   );
 }
