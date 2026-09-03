@@ -255,16 +255,20 @@ export default function DashboardPage() {
               </Button>
             )}
 
-            <Button
-              asChild
-              variant="outline"
-              className="border-white/20 bg-white/5 text-white hover:bg-white/15"
-            >
-              <Link href="/reports">
-                <FileSpreadsheet className="mr-2 h-4 w-4" />
-                Bulletins
-              </Link>
-            </Button>
+            {(user?.role === 'ADMIN' ||
+              user?.role === 'SECRETARY' ||
+              user?.role === 'PEDAGOGICAL_COUNCIL') && (
+              <Button
+                asChild
+                variant="outline"
+                className="border-white/20 bg-white/5 text-white hover:bg-white/15"
+              >
+                <Link href="/reports">
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  Bulletins
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -323,11 +327,10 @@ export default function DashboardPage() {
             colorTheme="emerald"
           />
           <StatCard
-            title="Bulletins de classe"
-            value="Consulter"
-            description="Aperçu des résultats de vos élèves"
-            icon={FileSpreadsheet}
-            href="/reports"
+            title="Statut Enseignant"
+            value="Actif"
+            description="Attribution pédagogique 2026–2027 validée"
+            icon={CheckCircle2}
             colorTheme="sky"
           />
         </div>
@@ -509,27 +512,21 @@ export default function DashboardPage() {
           Raccourcis & Modules Fréquents
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          <Link
-            href="/reports"
-            className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-brand-600">
-              <FileSpreadsheet className="h-4 w-4" />
-            </div>
-            <span>Palmarès & Bulletins</span>
-          </Link>
-
-          {user?.role === 'STUDENT' ? (
+          {(user?.role === 'ADMIN' ||
+            user?.role === 'SECRETARY' ||
+            user?.role === 'PEDAGOGICAL_COUNCIL') && (
             <Link
-              href="/grades/my-scores"
+              href="/reports"
               className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-emerald-600">
-                <TrendingUp className="h-4 w-4" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-brand-600">
+                <FileSpreadsheet className="h-4 w-4" />
               </div>
-              <span>Notes en direct</span>
+              <span>Palmarès & Bulletins</span>
             </Link>
-          ) : (
+          )}
+
+          {user?.role === 'TEACHER' && (
             <Link
               href="/grades/entry"
               className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
@@ -541,25 +538,64 @@ export default function DashboardPage() {
             </Link>
           )}
 
-          <Link
-            href="/academic"
-            className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-indigo-600">
-              <Layers className="h-4 w-4" />
-            </div>
-            <span>Structure & Matières</span>
-          </Link>
+          {user?.role === 'PEDAGOGICAL_COUNCIL' && (
+            <Link
+              href="/grades/validation"
+              className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-amber-600">
+                <ShieldCheck className="h-4 w-4" />
+              </div>
+              <span>Validation des Notes</span>
+            </Link>
+          )}
 
-          <Link
-            href="/students"
-            className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-sky-600">
-              <Users className="h-4 w-4" />
-            </div>
-            <span>Registre des Élèves</span>
-          </Link>
+          {user?.role === 'STUDENT' && (
+            <>
+              <Link
+                href="/grades/my-scores"
+                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-emerald-600">
+                  <TrendingUp className="h-4 w-4" />
+                </div>
+                <span>Notes en direct</span>
+              </Link>
+              <Link
+                href="/grades/my-notes"
+                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-violet-600">
+                  <Award className="h-4 w-4" />
+                </div>
+                <span>Mes Bulletins</span>
+              </Link>
+            </>
+          )}
+
+          {(user?.role === 'ADMIN' || user?.role === 'SECRETARY') && (
+            <>
+              <Link
+                href="/academic"
+                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-indigo-600">
+                  <Layers className="h-4 w-4" />
+                </div>
+                <span>Structure & Matières</span>
+              </Link>
+
+              <Link
+                href="/students"
+                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-sky-600">
+                  <Users className="h-4 w-4" />
+                </div>
+                <span>Registre des Élèves</span>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>

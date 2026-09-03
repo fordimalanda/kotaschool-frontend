@@ -73,154 +73,278 @@ function esc(s: unknown): string {
 function printBulletin(d: Detail) {
   const w = window.open('', '_blank', 'width=840,height=920');
   if (!w) return;
+
   const rows = d.lignes
     .map(
       (l) =>
-        `<tr><td>${esc(l.matiere)}</td><td class="c">${esc(
-          l.coefficient
-        )}</td><td class="c">${esc(l.note)}</td><td class="c font-bold">${esc(
-          l.noteBulletin
-        )}</td></tr>`
+        `<tr><td>${esc(l.matiere)}</td><td class="c">${esc(l.coefficient)}</td><td class="c">${esc(l.note)}</td><td class="c bold">${esc(l.noteBulletin)}</td></tr>`
     )
     .join('');
 
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Bulletin ${esc(
-    d.eleve.nom
-  )}</title><style>
-    body{font-family:Arial,Helvetica,sans-serif;color:#0f172a;padding:32px;margin:0}
-    .head{display:flex;justify-content:space-between;gap:16px;border-bottom:2px solid #0f172a;padding-bottom:12px}
-    h1{margin:0;font-size:22px;color:#4338ca;font-weight:bold}
-    table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}
-    th,td{border:1px solid #334155;padding:7px 10px;text-align:left}
-    th{background:#f8fafc;font-weight:bold}
-    .c{text-align:center}
-    .tot td{font-weight:bold;background:#f1f5f9}
-    .meta{margin:14px 0;font-size:13px;line-height:1.7}
-    .sig{margin-top:40px;display:flex;justify-content:space-between;font-size:11px;color:#475569}
-    @page{margin:16mm}
-  </style></head><body>
-    <div class="head">
-      <div><h1>Kotaschool</h1><div style="font-size:12px;color:#475569">Système Éducatif · EPSP (RDC)</div></div>
-      <div style="text-align:right"><b>Bulletin Officiel · ${esc(
-        d.semestre.libelle
-      )}</b><br><span style="font-size:12px">Année scolaire ${esc(
-    d.semestre.annee
-  )}</span></div>
+  const pct = Number(d.pourcentage);
+  const mention = pct >= 80 ? 'Grande Distinction' : pct >= 70 ? 'Distinction' : pct >= 60 ? 'Satisfaction' : pct >= 50 ? 'Réussi' : 'Non Réussi';
+  const mentionColor = pct >= 50 ? '#16a34a' : '#dc2626';
+
+  w.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<title>Bulletin — ${esc(d.eleve.nom)} ${esc(d.eleve.prenom)}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,Helvetica,sans-serif;color:#0f172a;background:#fff}
+  .page{width:210mm;min-height:297mm;margin:0 auto;padding:0}
+
+  .header{background:#1e3a8a;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:14px 20px}
+  .school-name{font-size:24px;font-weight:800;letter-spacing:-0.5px}
+  .school-sub{font-size:10px;color:#bae6fd;margin-top:2px}
+  .doc-badge{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:4px;padding:4px 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;text-align:right}
+  .doc-sem{font-size:10px;color:#bae6fd;margin-top:4px;text-align:right}
+
+  .accent-bar{background:linear-gradient(90deg,#1e3a8a,#3b82f6);height:3px}
+
+  .body{padding:16px 20px}
+
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px 14px;margin-bottom:14px}
+  .info-item{font-size:11.5px;color:#475569}
+  .info-item span{font-weight:700;color:#0f172a}
+
+  .section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#1e3a8a;margin-bottom:5px}
+
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  thead tr{background:#1e3a8a;color:#fff}
+  thead th{padding:7px 10px;text-align:left;font-weight:600;font-size:10.5px}
+  thead th.c{text-align:center}
+  tbody tr:nth-child(even){background:#f8fafc}
+  tbody td{padding:6px 10px;border-bottom:1px solid #e2e8f0}
+  tbody td.c{text-align:center}
+  tbody td.bold{text-align:center;font-weight:700;color:#1e3a8a}
+  tfoot td{padding:7px 10px;font-weight:700;font-size:12px;background:#e0e7ff;border-top:2px solid #1e3a8a;color:#1e3a8a}
+  tfoot td.c{text-align:center}
+
+  .result-box{display:flex;justify-content:space-between;align-items:center;margin-top:12px;background:#f0f9ff;border:1px solid #bae6fd;border-left:4px solid #0284c7;border-radius:6px;padding:10px 14px}
+  .r-item{text-align:center;flex:1}
+  .r-lbl{font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:2px}
+  .r-val{font-size:17px;font-weight:800;color:#0f172a;line-height:1}
+  .r-val.mention{font-size:14px;color:${mentionColor};border:2px solid ${mentionColor};border-radius:5px;padding:3px 10px;display:inline-block}
+
+  .divider{width:1px;height:36px;background:#bae6fd;margin:0 4px}
+
+  .sig{display:flex;justify-content:space-between;margin-top:30px;gap:12px}
+  .sig-block{flex:1;text-align:center}
+  .sig-line{border-top:1px solid #94a3b8;margin:24px auto 5px;width:75%}
+  .sig-label{font-size:9px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+
+  .footer{display:flex;justify-content:space-between;margin-top:18px;border-top:1px solid #e2e8f0;padding-top:6px;font-size:9px;color:#94a3b8}
+
+  @page{size:A4;margin:0}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="school-name">Kotaschool</div>
+      <div class="school-sub">Système Éducatif · EPSP — République Démocratique du Congo</div>
     </div>
-    <div class="meta">
-      <b>Élève :</b> ${esc(d.eleve.nom)} ${esc(d.eleve.postnom)} ${esc(
-    d.eleve.prenom
-  )}<br>
-      <b>Matricule :</b> ${esc(d.eleve.matricule)}<br>
-      <b>Classe :</b> ${esc(d.eleve.classe)} · ${esc(d.eleve.option)} (${esc(
-    d.eleve.section
-  )})
+    <div>
+      <div class="doc-badge">Bulletin Officiel</div>
+      <div class="doc-sem">${esc(d.semestre.libelle)} &nbsp;·&nbsp; Année ${esc(d.semestre.annee)}</div>
     </div>
-    <table><thead><tr><th>Matière</th><th class="c">Coef.</th><th class="c">Note / 20</th><th class="c">Note × Coef.</th></tr></thead>
-    <tbody>${rows}</tbody>
-    <tfoot><tr class="tot"><td>TOTAL GÉNÉRAL</td><td class="c">—</td><td class="c">—</td><td class="c">${esc(
-      d.totalObtenu
-    )} / ${esc(d.totalMaximum)}</td></tr></tfoot></table>
-    <div class="meta" style="margin-top:14px">
-      Pourcentage : <b>${esc(d.pourcentage)}%</b> &nbsp;|&nbsp; Rang : <b>${esc(
-    d.rang
-  )}</b> &nbsp;|&nbsp; Décision du Jury : <b>${esc(d.decision)}</b>
+  </div>
+  <div class="accent-bar"></div>
+
+  <div class="body">
+    <div class="info-grid">
+      <div class="info-item">Nom complet : <span>${esc(d.eleve.nom)} ${esc(d.eleve.postnom ?? '')} ${esc(d.eleve.prenom)}</span></div>
+      <div class="info-item">Classe : <span>${esc(d.eleve.classe)}</span></div>
+      <div class="info-item">Matricule : <span>${esc(d.eleve.matricule)}</span></div>
+      <div class="info-item">Option : <span>${esc(d.eleve.option)} (${esc(d.eleve.section)})</span></div>
     </div>
+
+    <div class="section-label">Résultats par Matière</div>
+    <table>
+      <thead><tr><th>Matière</th><th class="c">Coef.</th><th class="c">Note / 20</th><th class="c">Note × Coef.</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr><td><b>TOTAL GÉNÉRAL</b></td><td class="c">—</td><td class="c">—</td><td class="c">${esc(d.totalObtenu)} / ${esc(d.totalMaximum)}</td></tr></tfoot>
+    </table>
+
+    <div class="result-box">
+      <div class="r-item"><div class="r-lbl">Total obtenu</div><div class="r-val">${esc(d.totalObtenu)}<span style="font-size:11px;font-weight:400;color:#64748b"> / ${esc(d.totalMaximum)}</span></div></div>
+      <div class="divider"></div>
+      <div class="r-item"><div class="r-lbl">Pourcentage</div><div class="r-val">${esc(d.pourcentage)}%</div></div>
+      <div class="divider"></div>
+      <div class="r-item"><div class="r-lbl">Rang de classe</div><div class="r-val">${esc(d.rang ?? '—')}</div></div>
+      <div class="divider"></div>
+      <div class="r-item"><div class="r-lbl">Décision du Jury</div><div class="r-val mention">${mention}</div></div>
+    </div>
+
     <div class="sig">
-      <div>Fait le ${new Date().toLocaleDateString('fr-FR')}</div>
-      <div style="text-align:center">Le Chef d'Établissement</div>
-      <div style="text-align:right">Le Secrétaire Pédagogique</div>
+      <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Le Chef d'Établissement</div></div>
+      <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Le Secrétaire Pédagogique</div></div>
+      <div class="sig-block"><div class="sig-line"></div><div class="sig-label">Le Titulaire de Classe</div></div>
     </div>
-    <script>window.onload = function(){ window.print(); }<\/script>
-  </body></html>`);
+
+    <div class="footer">
+      <span>Généré le ${new Date().toLocaleDateString('fr-FR')} par Kotaschool</span>
+      <span>Document officiel — Ne pas reproduire sans autorisation</span>
+    </div>
+  </div>
+</div>
+<script>window.onload=function(){window.print()}<\/script>
+</body></html>`);
   w.document.close();
 }
 
 function downloadPdf(d: Detail) {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  doc.setFontSize(18);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(67, 56, 202);
-  doc.text('Kotaschool', 14, 16);
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(80, 80, 80);
-  doc.text('Système Éducatif · EPSP (RDC)', 14, 21);
-  doc.setFontSize(13);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(15, 23, 42);
-  doc.text(`Bulletin Officiel — ${d.semestre.libelle}`, 196, 16, {
-    align: 'right',
-  });
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(80, 80, 80);
-  doc.text(`Année scolaire ${d.semestre.annee}`, 196, 21, { align: 'right' });
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const W = 210;
+  const pct = Number(d.pourcentage);
+  const mention = pct >= 80 ? 'Grande Distinction' : pct >= 70 ? 'Distinction' : pct >= 60 ? 'Satisfaction' : pct >= 50 ? 'Réussi' : 'Non Réussi';
+  const isSuccess = pct >= 50;
 
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(15, 23, 42);
-  doc.text(
-    `${d.eleve.nom} ${d.eleve.postnom ?? ''} ${d.eleve.prenom}`.trim(),
-    14,
-    32
-  );
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Matricule : ${d.eleve.matricule}`, 14, 38);
-  doc.text(
-    `Classe : ${d.eleve.classe} · ${d.eleve.option} (${d.eleve.section})`,
-    14,
-    43
-  );
+  // ── Header background ──
+  doc.setFillColor(30, 58, 138);
+  doc.rect(0, 0, W, 26, 'F');
 
+  // School name
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('Kotaschool', 14, 11);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(186, 230, 253);
+  doc.text('Système Éducatif · EPSP — République Démocratique du Congo', 14, 17);
+
+  // Bulletin title right
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('BULLETIN OFFICIEL', W - 14, 11, { align: 'right' });
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(186, 230, 253);
+  doc.text(`${d.semestre.libelle}  ·  Année ${d.semestre.annee}`, W - 14, 17, { align: 'right' });
+
+  // Accent line
+  doc.setFillColor(59, 130, 246);
+  doc.rect(0, 26, W, 1.2, 'F');
+
+  // ── Student info box ──
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(226, 232, 240);
+  doc.roundedRect(14, 31, W - 28, 24, 2.5, 2.5, 'FD');
+
+  const labelCol = 18;
+  const valueCol1 = 47;
+  const labelCol2 = 113;
+  const valueCol2 = 130;
+
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(71, 85, 105);
+  doc.text('Nom complet :', labelCol, 39);
+  doc.text('Matricule :', labelCol, 47);
+  doc.text('Classe :', labelCol2, 39);
+  doc.text('Option :', labelCol2, 47);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(15, 23, 42);
+  doc.text(`${d.eleve.nom} ${d.eleve.postnom ?? ''} ${d.eleve.prenom}`.trim(), valueCol1, 39);
+  doc.text(d.eleve.matricule, valueCol1, 47);
+  doc.text(d.eleve.classe, valueCol2, 39);
+  doc.text(`${d.eleve.option} (${d.eleve.section})`, valueCol2, 47);
+
+  // ── Section label ──
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(30, 58, 138);
+  doc.text('RÉSULTATS PAR MATIÈRE', 14, 62);
+
+  // ── Grades table ──
   autoTable(doc, {
-    startY: 50,
+    startY: 65,
     head: [['Matière', 'Coef.', 'Note / 20', 'Note × Coef.']],
-    body: d.lignes.map((l) => [
-      l.matiere,
-      String(l.coefficient),
-      String(l.note),
-      String(l.noteBulletin),
-    ]),
+    body: d.lignes.map((l) => [l.matiere, String(l.coefficient), String(l.note), String(l.noteBulletin)]),
     foot: [['TOTAL GÉNÉRAL', '—', '—', `${d.totalObtenu} / ${d.totalMaximum}`]],
     theme: 'grid',
-    headStyles: {
-      fillColor: [241, 245, 249],
-      textColor: [30, 41, 59],
-      fontStyle: 'bold',
+    headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5, halign: 'center' },
+    columnStyles: {
+      0: { halign: 'left' },
+      1: { halign: 'center' },
+      2: { halign: 'center' },
+      3: { halign: 'center', fontStyle: 'bold', textColor: [30, 58, 138] },
     },
-    styles: { fontSize: 10, cellPadding: 3 },
-    footStyles: { fontStyle: 'bold' },
+    bodyStyles: { fontSize: 8.5, cellPadding: { top: 2.5, bottom: 2.5, left: 4, right: 4 } },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    footStyles: { fillColor: [224, 231, 255], textColor: [30, 58, 138], fontStyle: 'bold', fontSize: 8.5, halign: 'center' },
+    margin: { left: 14, right: 14 },
   });
 
-  const finalY =
-    (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable
-      ?.finalY ?? 60;
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text(
-    `Pourcentage : ${d.pourcentage}%    Rang : ${d.rang ?? '—'}    Décision : ${
-      d.decision ?? '—'
-    }`,
-    14,
-    finalY + 9
-  );
-  doc.setFontSize(9);
+  const finalY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 100;
+
+  // ── Result summary box ──
+  const boxY = finalY + 5;
+  doc.setFillColor(240, 249, 255);
+  doc.setDrawColor(186, 230, 253);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(14, boxY, W - 28, 20, 2.5, 2.5, 'FD');
+  // Left accent border
+  doc.setFillColor(2, 132, 199);
+  doc.rect(14, boxY, 1, 20, 'F');
+
+  const items = [
+    { label: 'Total obtenu', value: `${d.totalObtenu} / ${d.totalMaximum}` },
+    { label: 'Pourcentage', value: `${d.pourcentage}%` },
+    { label: 'Rang de classe', value: String(d.rang ?? '—') },
+    { label: 'Décision du Jury', value: mention },
+  ];
+  const colW = (W - 28) / items.length;
+  items.forEach((item, i) => {
+    const cx = 14 + colW * i + colW / 2;
+    doc.setFontSize(6.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(100, 116, 139);
+    doc.text(item.label.toUpperCase(), cx, boxY + 6.5, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    if (i === 3) {
+      doc.setTextColor(isSuccess ? 22 : 185, isSuccess ? 163 : 28, isSuccess ? 74 : 28);
+    } else {
+      doc.setTextColor(15, 23, 42);
+    }
+    doc.text(item.value, cx, boxY + 14.5, { align: 'center' });
+    // Vertical divider
+    if (i < items.length - 1) {
+      doc.setDrawColor(186, 230, 253);
+      doc.setLineWidth(0.3);
+      doc.line(14 + colW * (i + 1), boxY + 3, 14 + colW * (i + 1), boxY + 17);
+    }
+  });
+
+  // ── Signature lines ──
+  const sigY = boxY + 30;
+  const sigLabels = ["Le Chef d'Établissement", 'Le Secrétaire Pédagogique', 'Le Titulaire de Classe'];
+  const sigW = (W - 28) / 3;
+  sigLabels.forEach((label, i) => {
+    const sx = 14 + sigW * i + sigW / 2;
+    doc.setDrawColor(148, 163, 184);
+    doc.setLineWidth(0.35);
+    doc.line(sx - sigW * 0.33, sigY + 16, sx + sigW * 0.33, sigY + 16);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(71, 85, 105);
+    doc.text(label, sx, sigY + 21, { align: 'center' });
+  });
+
+  // ── Footer ──
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.25);
+  doc.line(14, 284, W - 14, 284);
+  doc.setFontSize(6.5);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(100, 100, 100);
-  doc.text(
-    `Fait le ${new Date().toLocaleDateString(
-      'fr-FR'
-    )} — Secrétariat Pédagogique Kotaschool`,
-    14,
-    finalY + 16
-  );
-  const filename =
-    `bulletin_${d.eleve.nom}_${d.eleve.prenom}_${d.semestre.libelle}.pdf`.replace(
-      /\s+/g,
-      '_'
-    );
+  doc.setTextColor(148, 163, 184);
+  doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')} par Kotaschool`, 14, 288);
+  doc.text('Document officiel — Ne pas reproduire sans autorisation', W - 14, 288, { align: 'right' });
+
+  const filename = `bulletin_${d.eleve.nom}_${d.eleve.prenom}_${d.semestre.libelle}.pdf`.replace(/\s+/g, '_');
   doc.save(filename);
 }
 
