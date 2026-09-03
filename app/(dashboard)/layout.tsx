@@ -19,7 +19,6 @@ import {
   X,
   School,
   ChevronRight,
-  Bell,
   Sparkles,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth.store';
@@ -376,16 +375,6 @@ export default function DashboardLayout({
               <span>Année Active · 2026–2027</span>
             </div>
 
-            {/* Notification Bell Simulator */}
-            <div className="relative">
-              <button
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 transition-colors shadow-soft-sm"
-                title="Notifications pédagogiques"
-              >
-                <Bell className="h-4 w-4" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-emerald-500" />
-              </button>
-            </div>
 
             {/* Logout button */}
             <Button
