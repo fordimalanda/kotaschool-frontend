@@ -24,7 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Types
 
 type Resultat = {
   libelle: string;
@@ -123,7 +123,7 @@ type MyAnnual = {
   missingInfo: string | null;
 };
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Helpers
 
 function esc(s: unknown): string {
   return String(s ?? '')
@@ -147,7 +147,7 @@ const MENTION_COLOR: Record<string, string> = {
   'Non réussi': 'text-red-700 bg-red-50 border-red-200',
 };
 
-// â”€â”€â”€ Print / PDF semestres â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Print / PDF semestres
 
 function printBulletin(d: {
   semestre: string;
@@ -171,9 +171,9 @@ function printBulletin(d: {
       (l) => `<tr>
     <td>${esc(l.matiere)}</td>
     <td class="c">${esc(l.coefficient)}</td>
-    <td class="c">${l.p1 !== undefined ? esc(l.p1) : 'â€”'}</td>
-    <td class="c">${l.p2 !== undefined ? esc(l.p2) : 'â€”'}</td>
-    <td class="c">${l.examen !== undefined ? `<b>${esc(l.examen)}</b>` : 'â€”'}</td>
+    <td class="c">${l.p1 !== undefined ? esc(l.p1) : '—'}</td>
+    <td class="c">${l.p2 !== undefined ? esc(l.p2) : '—'}</td>
+    <td class="c">${l.examen !== undefined ? `<b>${esc(l.examen)}</b>` : '—'}</td>
     <td class="c">${esc(l.note)}</td>
     <td class="c font-bold">${esc(l.noteBulletin)}</td>
   </tr>`
@@ -190,25 +190,25 @@ function printBulletin(d: {
     th,td{border:1px solid #334155;padding:5px;text-align:left}th{background:#f1f5f9}.c{text-align:center}.tot td{font-weight:bold}
     .meta{margin:12px 0;font-size:13px;line-height:1.6}.sig{margin-top:36px;font-size:11px;color:#475569}
     @page{margin:14mm}</style></head><body>
-    <div class="head"><div><h1>Complexe Scolaire Sainte Famille</h1><div>Système Ã‰ducatif Â· EPSP (RDC)</div></div><div style="text-align:right"><b>Bulletin Â· ${esc(
+    <div class="head"><div><h1>Complexe Scolaire Sainte Famille</h1><div>Système Éducatif · EPSP (RDC)</div></div><div style="text-align:right"><b>Bulletin · ${esc(
       d.semestre
     )}</b><br>Année scolaire ${esc(d.annee)}</div></div>
-    <p class="meta"><b>Ã‰lève :</b> ${esc(nomEleve(d.eleve))}<br><b>Matricule :</b> ${esc(
+    <p class="meta"><b>Élève :</b> ${esc(nomEleve(d.eleve))}<br><b>Matricule :</b> ${esc(
     d.eleve.matricule
-  )}<br><b>Classe :</b> ${esc(d.classe)} Â· ${esc(d.option)} (${esc(
+  )}<br><b>Classe :</b> ${esc(d.classe)} · ${esc(d.option)} (${esc(
     d.section
   )})</p>
-    <table><thead><tr><th>Matière</th><th class="c">Coef.</th><th class="c">P1 / 20</th><th class="c">P2 / 20</th><th class="c">Examen / 20</th><th class="c">Moy. / 20</th><th class="c">Total (Note Ã— Coef)</th></tr></thead>
+    <table><thead><tr><th>Matière</th><th class="c">Coef.</th><th class="c">P1 / 20</th><th class="c">P2 / 20</th><th class="c">Examen / 20</th><th class="c">Moy. / 20</th><th class="c">Total (Note × Coef)</th></tr></thead>
     <tbody>${rows}</tbody>
     <tfoot><tr class="tot"><td colspan="6">TOTAL SEMESTRIEL</td><td class="c">${esc(
       b.totalObtenu
     )} / ${esc(b.totalMaximum)}</td></tr></tfoot></table>
-    <p class="meta">Pourcentage : <b>${esc(b.pourcentage)}%</b> Â· Rang : <b>${esc(
+    <p class="meta">Pourcentage : <b>${esc(b.pourcentage)}%</b> · Rang : <b>${esc(
     b.rang
-  )}</b> Â· Décision : <b>${esc(b.decision)}</b></p>
+  )}</b> · Décision : <b>${esc(b.decision)}</b></p>
     <div class="sig">Fait le ${new Date().toLocaleDateString(
       'fr-FR'
-    )} â€” Direction des Ã‰tudes Complexe Scolaire Sainte Famille</div>
+    )} — Direction des Études Complexe Scolaire Sainte Famille</div>
     <script>window.onload = function(){ window.print(); }<\/script></body></html>`);
   w.document.close();
 }
@@ -236,11 +236,11 @@ function downloadBulletinPdf(d: {
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text('Système Ã‰ducatif Â· EPSP (RDC)', 14, 21);
+  doc.text('Système Éducatif · EPSP (RDC)', 14, 21);
   doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(15, 23, 42);
-  doc.text(`Bulletin â€” ${d.semestre}`, 196, 16, { align: 'right' });
+  doc.text(`Bulletin — ${d.semestre}`, 196, 16, { align: 'right' });
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
@@ -252,7 +252,7 @@ function downloadBulletinPdf(d: {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text(`Matricule : ${d.eleve.matricule}`, 14, 38);
-  doc.text(`Classe : ${d.classe} Â· ${d.option} (${d.section})`, 14, 43);
+  doc.text(`Classe : ${d.classe} · ${d.option} (${d.section})`, 14, 43);
   autoTable(doc, {
     startY: 50,
     head: [
@@ -263,15 +263,15 @@ function downloadBulletinPdf(d: {
         'Période 2',
         'Examen',
         'Moyenne / 20',
-        'Total (Note Ã— Coef)',
+        'Total (Note × Coef)',
       ],
     ],
     body: b.lignes.map((l) => [
       l.matiere,
       String(l.coefficient),
-      l.p1 !== undefined ? String(l.p1) : 'â€”',
-      l.p2 !== undefined ? String(l.p2) : 'â€”',
-      l.examen !== undefined ? String(l.examen) : 'â€”',
+      l.p1 !== undefined ? String(l.p1) : '—',
+      l.p2 !== undefined ? String(l.p2) : '—',
+      l.examen !== undefined ? String(l.examen) : '—',
       String(l.note),
       String(l.noteBulletin),
     ]),
@@ -301,8 +301,8 @@ function downloadBulletinPdf(d: {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.text(
-    `Pourcentage : ${b.pourcentage}%    Rang : ${b.rang ?? 'â€”'}    Décision : ${
-      b.decision ?? 'â€”'
+    `Pourcentage : ${b.pourcentage}%    Rang : ${b.rang ?? '—'}    Décision : ${
+      b.decision ?? '—'
     }`,
     14,
     finalY + 8
@@ -312,7 +312,7 @@ function downloadBulletinPdf(d: {
   );
 }
 
-// â”€â”€â”€ Print / PDF bulletin annuel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//Print / PDF bulletin annuel
 
 function printAnnualBulletin(
   eleve: {
@@ -334,13 +334,13 @@ function printAnnualBulletin(
       (l) => `<tr>
     <td>${esc(l.matiere)}</td>
     <td class="c">${esc(l.coefficient)}</td>
-    <td class="c">${l.p1 ?? 'â€”'}</td>
-    <td class="c">${l.p2 ?? 'â€”'}</td>
-    <td class="c"><b>${l.examS1 ?? 'â€”'}</b></td>
+    <td class="c">${l.p1 ?? '—'}</td>
+    <td class="c">${l.p2 ?? '—'}</td>
+    <td class="c"><b>${l.examS1 ?? '—'}</b></td>
     <td class="c">${esc(l.pointsS1)} <small>/${esc(l.maxS1)}</small></td>
-    <td class="c">${l.p3 ?? 'â€”'}</td>
-    <td class="c">${l.p4 ?? 'â€”'}</td>
-    <td class="c"><b>${l.examS2 ?? 'â€”'}</b></td>
+    <td class="c">${l.p3 ?? '—'}</td>
+    <td class="c">${l.p4 ?? '—'}</td>
+    <td class="c"><b>${l.examS2 ?? '—'}</b></td>
     <td class="c">${esc(l.pointsS2)} <small>/${esc(l.maxS2)}</small></td>
     <td class="c"><b>${esc(l.totalAnnuel)} / ${esc(l.maxAnnuel)}</b></td>
     <td class="c ${l.pourcentage < 50 ? 'red' : 'green'}"><b>${esc(
@@ -364,15 +364,15 @@ function printAnnualBulletin(
     .red{color:#dc2626}.green{color:#16a34a}
   </style></head><body>
     <div class="head">
-      <div><h1>Complexe Scolaire Sainte Famille</h1><div>RÃ‰PUBLIQUE DÃ‰MOCRATIQUE DU CONGO Â· EPSP</div></div>
+      <div><h1>Complexe Scolaire Sainte Famille</h1><div>RÉPUBLIQUE DÉMOCRATIQUE DU CONGO · EPSP</div></div>
       <div style="text-align:right"><b>BULLETIN SCOLAIRE ANNUEL</b><br>Année scolaire ${esc(
         annee
       )}</div>
     </div>
     <div class="meta">
-      <b>Ã‰lève :</b> ${esc(nomEleve(eleve))} &nbsp;|&nbsp; <b>Matricule :</b> ${esc(
+      <b>Élève :</b> ${esc(nomEleve(eleve))} &nbsp;|&nbsp; <b>Matricule :</b> ${esc(
     eleve.matricule
-  )} &nbsp;|&nbsp; <b>Classe :</b> ${esc(classe)} Â· ${esc(option)} (${esc(
+  )} &nbsp;|&nbsp; <b>Classe :</b> ${esc(classe)} · ${esc(option)} (${esc(
     section
   )})
     </div>
@@ -382,8 +382,8 @@ function printAnnualBulletin(
           <th rowspan="2">Branche / Matière</th>
           <th rowspan="2" class="c">Coef</th>
           <th colspan="4" class="c">PREMIER SEMESTRE</th>
-          <th colspan="4" class="c">DEUXIÃˆME SEMESTRE</th>
-          <th colspan="2" class="c">TOTAL GÃ‰NÃ‰RAL</th>
+          <th colspan="4" class="c">DEUXIÈME SEMESTRE</th>
+          <th colspan="2" class="c">TOTAL GÉNÉRAL</th>
         </tr>
         <tr>
           <th class="c">P1</th><th class="c">P2</th><th class="c">Exam 1</th><th class="c">Total S1</th>
@@ -393,7 +393,7 @@ function printAnnualBulletin(
       </thead>
       <tbody>${rows}</tbody>
       <tfoot><tr class="tot">
-        <td colspan="10">TOTAL GÃ‰NÃ‰RAL ANNUEL</td>
+        <td colspan="10">TOTAL GÉNÉRAL ANNUEL</td>
         <td class="c">${esc(b.totalObtenu)} / ${esc(b.totalMaximum)}</td>
         <td class="c">${esc(b.pourcentage)}%</td>
       </tr></tfoot>
@@ -401,7 +401,7 @@ function printAnnualBulletin(
     <div class="info-grid">
       <div><b>Pourcentage annuel :</b> ${esc(b.pourcentage)}%</div>
       <div><b>Place / Rang :</b> ${
-        b.rang ? `${esc(b.rang)} / ${esc(b.totalEleves)}` : 'â€”'
+        b.rang ? `${esc(b.rang)} / ${esc(b.totalEleves)}` : '—'
       }</div>
       <div><b>Degré de satisfaction :</b> <u>${esc(b.mention)}</u></div>
       <div><b>Décision du jury :</b> <strong>${esc(b.decision)}</strong></div>
@@ -410,7 +410,7 @@ function printAnnualBulletin(
     </div>
     <div class="sig">
       <div>Sceau de l'établissement</div>
-      <div>Le Préfet des Ã‰tudes</div>
+      <div>Le Préfet des Études</div>
       <div>Fait le ${new Date().toLocaleDateString('fr-FR')}</div>
     </div>
     <script>window.onload = function(){ window.print(); }<\/script>
@@ -440,7 +440,7 @@ function downloadAnnualPdf(
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text('RÃ‰PUBLIQUE DÃ‰MOCRATIQUE DU CONGO Â· EPSP / EPST', 14, 20);
+  doc.text('RÉPUBLIQUE DÉMOCRATIQUE DU CONGO · EPSP / EPST', 14, 20);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(15, 23, 42);
@@ -474,7 +474,7 @@ function downloadAnnualPdf(
           styles: { halign: 'center', fillColor: [67, 56, 202] },
         },
         {
-          content: 'DEUXIÃˆME SEMESTRE',
+          content: 'DEUXIÈME SEMESTRE',
           colSpan: 4,
           styles: { halign: 'center', fillColor: [67, 56, 202] },
         },
@@ -500,20 +500,20 @@ function downloadAnnualPdf(
     body: b.lignes.map((l) => [
       l.matiere,
       String(l.coefficient),
-      l.p1 !== undefined ? String(l.p1) : 'â€”',
-      l.p2 !== undefined ? String(l.p2) : 'â€”',
-      l.examS1 !== undefined ? String(l.examS1) : 'â€”',
+      l.p1 !== undefined ? String(l.p1) : '—',
+      l.p2 !== undefined ? String(l.p2) : '—',
+      l.examS1 !== undefined ? String(l.examS1) : '—',
       `${l.pointsS1}/${l.maxS1}`,
-      l.p3 !== undefined ? String(l.p3) : 'â€”',
-      l.p4 !== undefined ? String(l.p4) : 'â€”',
-      l.examS2 !== undefined ? String(l.examS2) : 'â€”',
+      l.p3 !== undefined ? String(l.p3) : '—',
+      l.p4 !== undefined ? String(l.p4) : '—',
+      l.examS2 !== undefined ? String(l.examS2) : '—',
       `${l.pointsS2}/${l.maxS2}`,
       `${l.totalAnnuel} / ${l.maxAnnuel}`,
       `${l.pourcentage}%`,
     ]),
     foot: [
       [
-        'TOTAL GÃ‰NÃ‰RAL ANNUEL',
+        'TOTAL GÉNÉRAL ANNUEL',
         '',
         '',
         '',
@@ -552,7 +552,7 @@ function downloadAnnualPdf(
 
   const summaryItems = [
     ['Pourcentage annuel :', `${b.pourcentage}%`],
-    ['Place / Rang :', b.rang ? `${b.rang} / ${b.totalEleves}` : 'â€”'],
+    ['Place / Rang :', b.rang ? `${b.rang} / ${b.totalEleves}` : '—'],
     ['Degré de satisfaction :', b.mention],
     ['Décision du jury :', b.decision],
     ['Application :', b.application],
@@ -573,7 +573,7 @@ function downloadAnnualPdf(
   doc.text(
     `Fait à Kinshasa, le ${new Date().toLocaleDateString(
       'fr-FR'
-    )} â€” Direction de Complexe Scolaire Sainte Famille`,
+    )} — Direction de Complexe Scolaire Sainte Famille`,
     14,
     finalY + 16
   );
@@ -583,7 +583,7 @@ function downloadAnnualPdf(
   );
 }
 
-// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Main Page
 
 export default function MyNotesPage() {
   const [data, setData] = useState<MyGrades | null>(null);
@@ -609,7 +609,7 @@ export default function MyNotesPage() {
 
   return (
     <section className="space-y-8 animate-fade-in">
-      {/* â”€â”€ Header â”€â”€ */}
+      {/*  Header  */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
@@ -618,12 +618,12 @@ export default function MyNotesPage() {
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-slate-500">
             {data
-              ? `${nomEleve(data.eleve)} Â· ${data.classe} Â· ${data.option} (${data.section}) â€” Année ${data.annee}`
+              ? `${nomEleve(data.eleve)} · ${data.classe} · ${data.option} (${data.section}) — Année ${data.annee}`
               : 'Consultation et téléchargement officiel de vos bulletins semestriels et annuels.'}
           </p>
         </div>
         <Badge variant="violet" className="self-start sm:self-auto font-mono">
-          {data?.annee ?? '2026â€“2027'}
+          {data?.annee ?? '2026–2027'}
         </Badge>
       </div>
 
@@ -637,12 +637,12 @@ export default function MyNotesPage() {
         <div className="flex h-64 items-center justify-center">
           <div className="flex flex-col items-center gap-2 text-slate-500">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-600 border-t-transparent" />
-            <span className="text-xs font-medium">Chargement de vos bulletinsâ€¦</span>
+            <span className="text-xs font-medium">Chargement de vos bulletins…</span>
           </div>
         </div>
       )}
 
-      {/* â”€â”€ Bulletins semestriels â”€â”€ */}
+      {/*  Bulletins semestriels  */}
       {data?.semestres.map((s) => {
         const validees = s.resultats.filter((r) => r.estValide);
         const bul = s.bulletin;
@@ -689,7 +689,7 @@ export default function MyNotesPage() {
                 <table className="w-full text-left text-xs sm:text-sm">
                   <thead className="border-b border-slate-200 bg-slate-100/60 text-xs font-semibold uppercase tracking-wider text-slate-600">
                     <tr>
-                      <th className="p-3.5">Matière & Ã‰valuation</th>
+                      <th className="p-3.5">Matière & Évaluation</th>
                       <th className="p-3.5">Type</th>
                       <th className="p-3.5">Période</th>
                       <th className="p-3.5">Note Obtenue</th>
@@ -712,7 +712,7 @@ export default function MyNotesPage() {
                               {r.matiere}
                             </span>
                             <span className="text-slate-400 ml-1.5">
-                              Â· {r.libelle}
+                              · {r.libelle}
                             </span>
                           </td>
                           <td className="p-3.5">
@@ -766,7 +766,7 @@ export default function MyNotesPage() {
                       </strong>
                     </span>
                     <span>
-                      Rang : <strong>{bul.rang ?? 'â€”'}</strong>
+                      Rang : <strong>{bul.rang ?? '—'}</strong>
                     </span>
                     <span>
                       Décision :{' '}
@@ -775,7 +775,7 @@ export default function MyNotesPage() {
                           bul.pourcentage >= 50 ? 'success' : 'destructive'
                         }
                       >
-                        {bul.decision ?? 'â€”'}
+                        {bul.decision ?? '—'}
                       </Badge>
                     </span>
                     <span>
@@ -821,7 +821,7 @@ export default function MyNotesPage() {
         );
       })}
 
-      {/* â”€â”€ Bulletin Annuel (EPSP Congo) â”€â”€ */}
+      {/* Bulletin Annuel (EPSP Congo) */}
       {annual && (
         <div className="overflow-hidden rounded-2xl border-2 border-brand-200 bg-white shadow-soft-lg">
           {/* Header */}
@@ -829,14 +829,14 @@ export default function MyNotesPage() {
             <div>
               <div className="text-[11px] uppercase tracking-wider text-brand-300 font-semibold flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5" />
-                RÃ‰PUBLIQUE DÃ‰MOCRATIQUE DU CONGO Â· EPSP
+                RÉPUBLIQUE DÉMOCRATIQUE DU CONGO · EPSP
               </div>
               <h2 className="text-xl font-bold tracking-tight text-white mt-1 flex items-center gap-2">
                 <Award className="h-5 w-5 text-amber-400" />
                 Bulletin Scolaire Annuel Synthétique
               </h2>
               <p className="mt-0.5 text-xs text-slate-300">
-                Consolidation générale Semestre 1 + Semestre 2 â€” Session{' '}
+                Consolidation générale Semestre 1 + Semestre 2 — Session{' '}
                 {annual.annee}
               </p>
             </div>
@@ -912,7 +912,7 @@ export default function MyNotesPage() {
                             label: 'Rang Général',
                             value: annual.bulletin.rang
                               ? `${annual.bulletin.rang} / ${annual.bulletin.totalEleves}`
-                              : 'â€”',
+                              : '—',
                           },
                           {
                             label: 'Application',
@@ -993,7 +993,7 @@ export default function MyNotesPage() {
                               colSpan={4}
                               className="p-2.5 border-r border-brand-800 bg-brand-950 font-bold"
                             >
-                              DEUXIÃˆME SEMESTRE
+                              DEUXIÈME SEMESTRE
                             </th>
                             <th colSpan={2} className="p-2.5 bg-slate-900 font-bold">
                               TOTAL ANNUEL
@@ -1030,10 +1030,10 @@ export default function MyNotesPage() {
                               <td className="p-2.5 text-slate-500 border-r border-slate-100 font-mono">
                                 {l.coefficient}
                               </td>
-                              <td className="p-2">{l.p1 ?? 'â€”'}</td>
-                              <td className="p-2">{l.p2 ?? 'â€”'}</td>
+                              <td className="p-2">{l.p1 ?? '—'}</td>
+                              <td className="p-2">{l.p2 ?? '—'}</td>
                               <td className="p-2 bg-brand-50/40 font-semibold text-brand-900">
-                                {l.examS1 ?? 'â€”'}
+                                {l.examS1 ?? '—'}
                               </td>
                               <td className="p-2 border-r border-slate-200 font-semibold text-slate-800">
                                 {l.pointsS1}{' '}
@@ -1041,10 +1041,10 @@ export default function MyNotesPage() {
                                   /{l.maxS1}
                                 </span>
                               </td>
-                              <td className="p-2">{l.p3 ?? 'â€”'}</td>
-                              <td className="p-2">{l.p4 ?? 'â€”'}</td>
+                              <td className="p-2">{l.p3 ?? '—'}</td>
+                              <td className="p-2">{l.p4 ?? '—'}</td>
                               <td className="p-2 bg-brand-50/40 font-semibold text-brand-900">
-                                {l.examS2 ?? 'â€”'}
+                                {l.examS2 ?? '—'}
                               </td>
                               <td className="p-2 border-r border-slate-200 font-semibold text-slate-800">
                                 {l.pointsS2}{' '}
@@ -1073,7 +1073,7 @@ export default function MyNotesPage() {
                         <tfoot className="bg-brand-50/80 text-center font-bold">
                           <tr className="border-t-2 border-brand-300">
                             <td className="p-3 text-left font-bold" colSpan={2}>
-                              TOTAL GÃ‰NÃ‰RAL ANNUEL
+                              TOTAL GÉNÉRAL ANNUEL
                             </td>
                             <td
                               colSpan={4}
