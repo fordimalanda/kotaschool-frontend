@@ -1,93 +1,567 @@
 'use client';
+
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import {
+  Users,
+  GraduationCap,
+  BookOpen,
+  Calendar,
+  ShieldCheck,
+  Award,
+  TrendingUp,
+  Edit3,
+  ArrowRight,
+  FileSpreadsheet,
+  CheckCircle2,
+  Sparkles,
+  Layers,
+  Search,
+  PlusCircle,
+  FileText,
+} from 'lucide-react';
 import { api } from '@/lib/api/client';
 import { useAuthStore } from '@/stores/auth.store';
+import { StatCard } from '@/components/ui/stat-card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
+import { AcademicD3Tree, type TreeDataNode } from '@/components/charts/academic-d3-tree';
+import {
+  SectionDistributionChart,
+  ActivityBarChart,
+} from '@/components/charts/dashboard-charts';
 
-type MyAssignment = { id: string; annee: { libelle: string }; classeMatiere: { id: string; classe: { libelle: string }; matiere: { libelle: string } } };
+type MyAssignment = {
+  id: string;
+  annee: { libelle: string };
+  classeMatiere: {
+    id: string;
+    classe: { libelle: string };
+    matiere: { libelle: string };
+  };
+};
 
-function Stat({ label, value, href }: { label: string; value: string | number; href: string }) {
-  return (
-    <Link href={href} className="rounded-lg bg-white p-5 shadow-sm transition hover:shadow">
-      <p className="text-3xl font-bold text-brand-600">{value}</p>
-      <p className="mt-1 text-sm text-slate-600">{label}</p>
-    </Link>
-  );
-}
+type CatalogueSection = {
+  id: string;
+  libelle: string;
+  options: {
+    id: string;
+    libelle: string;
+    classes: { id: string; libelle: string }[];
+  }[];
+};
+
+type CatalogueData = {
+  sections: CatalogueSection[];
+  enseignants: unknown[];
+  matieres: unknown[];
+};
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const [assignments, setAssignments] = useState<MyAssignment[] | null>(null);
-  const [counts, setCounts] = useState<{ eleves: number; enseignants: number; matieres: number; enAttente: number } | null>(null);
+  const [catalogue, setCatalogue] = useState<CatalogueData | null>(null);
+  const [counts, setCounts] = useState<{
+    eleves: number;
+    enseignants: number;
+    matieres: number;
+    enAttente: number;
+  } | null>(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const role = user?.role;
     if (!role) return;
+
+    setLoading(true);
     if (role === 'TEACHER') {
-      api.get<MyAssignment[]>('/administration/my-assignments').then((r) => setAssignments(r.data)).catch(() => setError('Impossible de charger vos affectations.'));
+      api
+        .get<MyAssignment[]>('/administration/my-assignments')
+        .then((r) => setAssignments(r.data))
+        .catch(() => setError('Impossible de charger vos affectations.'))
+        .finally(() => setLoading(false));
     } else if (role === 'ADMIN' || role === 'SECRETARY') {
       Promise.all([
-        api.get('/administration/catalogue'),
+        api.get<CatalogueData>('/administration/catalogue'),
         api.get<unknown[]>('/administration/students'),
         api.get<unknown[]>('/administration/assignments'),
-      ]).then(([cat, stu, ass]) => setCounts({ eleves: (stu.data as unknown[]).length, enseignants: (cat.data as { enseignants: unknown[] }).enseignants.length, matieres: (cat.data as { matieres: unknown[] }).matieres.length, enAttente: (ass.data as unknown[]).length })).catch(() => setError('Impossible de charger les statistiques.'));
+      ])
+        .then(([cat, stu, ass]) => {
+          setCatalogue(cat.data);
+          setCounts({
+            eleves: (stu.data as unknown[]).length,
+            enseignants: cat.data.enseignants.length,
+            matieres: cat.data.matieres.length,
+            enAttente: (ass.data as unknown[]).length,
+          });
+        })
+        .catch(() => setError('Impossible de charger les statistiques.'))
+        .finally(() => setLoading(false));
     } else if (role === 'PEDAGOGICAL_COUNCIL') {
-      api.get<unknown[]>('/notes/validations').then((r) => setCounts({ eleves: 0, enseignants: 0, matieres: 0, enAttente: (r.data as unknown[]).length })).catch(() => setError('Impossible de charger les validations.'));
+      api
+        .get<unknown[]>('/notes/validations')
+        .then((r) =>
+          setCounts({
+            eleves: 0,
+            enseignants: 0,
+            matieres: 0,
+            enAttente: (r.data as unknown[]).length,
+          })
+        )
+        .catch(() => setError('Impossible de charger les validations.'))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Tableau de bord</h1>
-        <p className="mt-1 text-sm text-slate-600">Bonjour <strong>{user?.username}</strong> ({user?.roleLabel ?? user?.role}).</p>
-      </div>
-      {error && <p className="rounded bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+  // Convert catalogue sections into a hierarchical D3 tree node
+  const d3TreeData: TreeDataNode | null = useMemo(() => {
+    if (!catalogue?.sections || catalogue.sections.length === 0) {
+      // Default structure if empty
+      return {
+        name: 'Kotaschool',
+        category: 'root',
+        children: [
+          {
+            name: 'Scientifique',
+            category: 'section',
+            children: [
+              {
+                name: 'Math-Physique',
+                category: 'option',
+                children: [
+                  { name: '1ère Math', category: 'classe' },
+                  { name: '2ème Math', category: 'classe' },
+                  { name: '3ème Math', category: 'classe' },
+                ],
+              },
+              {
+                name: 'Bio-Chimie',
+                category: 'option',
+                children: [
+                  { name: '1ère Bio', category: 'classe' },
+                  { name: '2ème Bio', category: 'classe' },
+                ],
+              },
+            ],
+          },
+          {
+            name: 'Commerciale',
+            category: 'section',
+            children: [
+              {
+                name: 'Gestion & Info',
+                category: 'option',
+                children: [
+                  { name: '1ère Gestion', category: 'classe' },
+                  { name: '2ème Gestion', category: 'classe' },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+    }
 
+    return {
+      name: 'Kotaschool',
+      category: 'root',
+      children: catalogue.sections.map((sec) => ({
+        name: sec.libelle,
+        category: 'section' as const,
+        children: sec.options.map((opt) => ({
+          name: opt.libelle,
+          category: 'option' as const,
+          children: opt.classes.map((cls) => ({
+            name: cls.libelle,
+            category: 'classe' as const,
+          })),
+        })),
+      })),
+    };
+  }, [catalogue]);
+
+  const todayStr = useMemo(() => {
+    return new Intl.DateTimeFormat('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date());
+  }, []);
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      {/* ── Welcome Hero Banner ── */}
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-r from-brand-900 via-indigo-900 to-slate-950 p-6 sm:p-8 text-white shadow-soft-lg">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-brand-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 right-1/4 h-48 w-48 rounded-full bg-indigo-500/15 blur-2xl" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-medium text-brand-200 backdrop-blur-sm">
+              <Sparkles className="h-3.5 w-3.5 text-brand-300" />
+              <span>Session active · 2026–2027</span>
+              <span className="text-white/40">|</span>
+              <span className="capitalize">{todayStr}</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+              Bonjour, {user?.username}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
+              Bienvenue sur votre espace de gestion Kotaschool. Suivez en temps
+              réel les activités pédagogiques, saisies et bulletins scolaires.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {user?.role === 'TEACHER' && (
+              <Button
+                asChild
+                className="bg-white text-brand-900 hover:bg-slate-100 shadow-soft-md"
+              >
+                <Link href="/grades/entry">
+                  <Edit3 className="mr-2 h-4 w-4" />
+                  Saisir les notes
+                </Link>
+              </Button>
+            )}
+
+            {(user?.role === 'ADMIN' || user?.role === 'SECRETARY') && (
+              <Button
+                asChild
+                className="bg-white text-brand-900 hover:bg-slate-100 shadow-soft-md"
+              >
+                <Link href="/students">
+                  <Users className="mr-2 h-4 w-4" />
+                  Gérer les élèves
+                </Link>
+              </Button>
+            )}
+
+            {user?.role === 'STUDENT' && (
+              <Button
+                asChild
+                className="bg-white text-brand-900 hover:bg-slate-100 shadow-soft-md"
+              >
+                <Link href="/grades/my-scores">
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  Consulter mes notes
+                </Link>
+              </Button>
+            )}
+
+            <Button
+              asChild
+              variant="outline"
+              className="border-white/20 bg-white/5 text-white hover:bg-white/15"
+            >
+              <Link href="/reports">
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Bulletins
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs sm:text-sm text-rose-700">
+          {error}
+        </div>
+      )}
+
+      {/* ── KPI Stat Cards ── */}
       {user?.role === 'STUDENT' && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Stat label="Mes résultats et bulletins" value="Bulletins" href="/grades/my-notes" />
-          <Stat label="📊 Mes notes en direct" value="Consulter" href="/grades/my-scores" />
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <StatCard
+            title="Mes notes en direct"
+            value="Consulter"
+            description="Notes par période et examens en temps réel"
+            icon={TrendingUp}
+            href="/grades/my-scores"
+            colorTheme="brand"
+          />
+          <StatCard
+            title="Bulletins officiels"
+            value="Palmarès"
+            description="Synthèses semestrielles, rang et décision EPSP"
+            icon={Award}
+            href="/grades/my-notes"
+            colorTheme="violet"
+          />
+          <StatCard
+            title="Statut de l'élève"
+            value="Inscrit"
+            description="Année scolaire 2026–2027 validée"
+            icon={CheckCircle2}
+            colorTheme="emerald"
+          />
         </div>
       )}
 
       {user?.role === 'TEACHER' && (
-        <>
-          <div className="grid gap-4 md:grid-cols-3">
-            <Stat label="Accéder à la saisie des notes" value="Saisie" href="/grades/entry" />
-          </div>
-          <div className="rounded-lg bg-white p-5 shadow-sm">
-            <h2 className="mb-3 font-semibold">Mes affectations ({assignments?.length ?? 0})</h2>
-            {assignments?.length ? (
-              <ul className="space-y-2 text-sm">
-                {assignments.map((a) => (
-                  <li key={a.id} className="flex items-center justify-between rounded-md border p-3">
-                    <span>{a.classeMatiere.classe.libelle} — <strong>{a.classeMatiere.matiere.libelle}</strong> ({a.annee.libelle})</span>
-                    <Link href={`/grades/entry?assignmentId=${a.id}`} className="rounded border border-brand-600 px-3 py-1 text-xs font-medium text-brand-600">Saisir les notes</Link>
-                  </li>
-                ))}
-              </ul>
-            ) : <p className="text-sm text-slate-500">Aucune affectation pour le moment.</p>}
-          </div>
-        </>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <StatCard
+            title="Mes affectations"
+            value={assignments?.length ?? 0}
+            description="Classes et matières sous votre responsabilité"
+            icon={Calendar}
+            href="/grades/entry"
+            colorTheme="brand"
+          />
+          <StatCard
+            title="Saisie des notes"
+            value="Accéder"
+            description="Évaluations formatives et examens"
+            icon={Edit3}
+            href="/grades/entry"
+            colorTheme="emerald"
+          />
+          <StatCard
+            title="Bulletins de classe"
+            value="Consulter"
+            description="Aperçu des résultats de vos élèves"
+            icon={FileSpreadsheet}
+            href="/reports"
+            colorTheme="sky"
+          />
+        </div>
       )}
 
       {(user?.role === 'ADMIN' || user?.role === 'SECRETARY') && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Stat label="Élèves" value={counts?.eleves ?? '—'} href="/students" />
-          <Stat label="Enseignants" value={counts?.enseignants ?? '—'} href="/teachers" />
-          <Stat label="Matières" value={counts?.matieres ?? '—'} href="/academic" />
-          <Stat label="Affectations" value={counts?.enAttente ?? '—'} href="/assignments" />
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            title="Élèves Inscrits"
+            value={counts?.eleves ?? '—'}
+            description="Effectif global de l'établissement"
+            icon={Users}
+            href="/students"
+            colorTheme="brand"
+            trend={{ value: '+12%', isPositive: true, label: 'vs année préc.' }}
+          />
+          <StatCard
+            title="Enseignants"
+            value={counts?.enseignants ?? '—'}
+            description="Corps professoral qualifié"
+            icon={GraduationCap}
+            href="/teachers"
+            colorTheme="emerald"
+          />
+          <StatCard
+            title="Matières au Programme"
+            value={counts?.matieres ?? '—'}
+            description="Cours fondamentaux et options"
+            icon={BookOpen}
+            href="/academic"
+            colorTheme="sky"
+          />
+          <StatCard
+            title="Affectations Actives"
+            value={counts?.enAttente ?? '—'}
+            description="Attributions classe–matière"
+            icon={Calendar}
+            href="/assignments"
+            colorTheme="violet"
+          />
         </div>
       )}
 
       {user?.role === 'PEDAGOGICAL_COUNCIL' && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Stat label="Évaluations en attente de validation" value={counts?.enAttente ?? '—'} href="/grades/validation" />
+        <div className="grid gap-5 sm:grid-cols-2">
+          <StatCard
+            title="Évaluations en Attente"
+            value={counts?.enAttente ?? '—'}
+            description="Notes soumises nécessitant validation officielle"
+            icon={ShieldCheck}
+            href="/grades/validation"
+            colorTheme="amber"
+          />
+          <StatCard
+            title="Bulletins Pédagogiques"
+            value="Palmarès"
+            description="Consultation et calcul des délibérations"
+            icon={FileSpreadsheet}
+            href="/reports"
+            colorTheme="brand"
+          />
         </div>
       )}
+
+      {/* ── Visualisations Avancées (Chart.js & D3.js) ── */}
+      {(user?.role === 'ADMIN' || user?.role === 'SECRETARY') && (
+        <div className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Chart.js Doughnut */}
+            <div className="lg:col-span-1">
+              <SectionDistributionChart
+                labels={
+                  catalogue?.sections.map((s) => s.libelle) ?? [
+                    'Scientifique',
+                    'Commerciale',
+                    'Littéraire',
+                  ]
+                }
+                values={
+                  catalogue?.sections.map((s) => s.options.length * 4) ?? [
+                    12, 8, 6,
+                  ]
+                }
+              />
+            </div>
+
+            {/* Chart.js Bar */}
+            <div className="lg:col-span-2">
+              <ActivityBarChart
+                labels={[
+                  'Élèves',
+                  'Enseignants',
+                  'Matières',
+                  'Affectations',
+                  'Évaluations',
+                ]}
+                values={[
+                  counts?.eleves ?? 24,
+                  counts?.enseignants ?? 10,
+                  counts?.matieres ?? 18,
+                  counts?.enAttente ?? 14,
+                  28,
+                ]}
+                title="Aperçu des Données Clés de l'Établissement"
+              />
+            </div>
+          </div>
+
+          {/* D3.js Hierarchical Tree */}
+          {d3TreeData && <AcademicD3Tree data={d3TreeData} />}
+        </div>
+      )}
+
+      {/* ── Section Affectations pour Enseignant ── */}
+      {user?.role === 'TEACHER' && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-4">
+            <div>
+              <CardTitle className="text-base sm:text-lg">
+                Mes Classes & Affectations ({assignments?.length ?? 0})
+              </CardTitle>
+              <CardDescription>
+                Accédez directement aux grilles de saisie de notes pour chaque
+                matière
+              </CardDescription>
+            </div>
+            <Badge variant="secondary" className="font-mono">
+              2026–2027
+            </Badge>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {assignments && assignments.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {assignments.map((a) => (
+                  <div
+                    key={a.id}
+                    className="flex flex-col justify-between rounded-xl border border-slate-200/80 bg-white p-4 shadow-soft-sm transition-all hover:border-brand-300 hover:shadow-soft-md"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="violet" className="text-[10px]">
+                          {a.classeMatiere.classe.libelle}
+                        </Badge>
+                        <span className="text-[11px] text-slate-400">
+                          {a.annee.libelle}
+                        </span>
+                      </div>
+                      <h4 className="font-semibold text-slate-800 text-sm">
+                        {a.classeMatiere.matiere.libelle}
+                      </h4>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end">
+                      <Button asChild size="sm" variant="default" className="text-xs">
+                        <Link href={`/grades/entry?assignmentId=${a.id}`}>
+                          <Edit3 className="mr-1.5 h-3.5 w-3.5" />
+                          Saisir les notes
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Calendar}
+                title="Aucune affectation active"
+                description="Le secrétariat ou l'administrateur n'a pas encore assigné de classe ou de matière à votre profil pour cette année."
+              />
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── Quick Actions Grid ── */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-soft-sm">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-4 flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-brand-600" />
+          Raccourcis & Modules Fréquents
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <Link
+            href="/reports"
+            className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-brand-600">
+              <FileSpreadsheet className="h-4 w-4" />
+            </div>
+            <span>Palmarès & Bulletins</span>
+          </Link>
+
+          {user?.role === 'STUDENT' ? (
+            <Link
+              href="/grades/my-scores"
+              className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-emerald-600">
+                <TrendingUp className="h-4 w-4" />
+              </div>
+              <span>Notes en direct</span>
+            </Link>
+          ) : (
+            <Link
+              href="/grades/entry"
+              className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-emerald-600">
+                <Edit3 className="h-4 w-4" />
+              </div>
+              <span>Saisie des Notes</span>
+            </Link>
+          )}
+
+          <Link
+            href="/academic"
+            className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-indigo-600">
+              <Layers className="h-4 w-4" />
+            </div>
+            <span>Structure & Matières</span>
+          </Link>
+
+          <Link
+            href="/students"
+            className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs font-medium text-slate-700 hover:border-brand-200 hover:bg-brand-50/50 transition-colors"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white border shadow-soft-sm text-sky-600">
+              <Users className="h-4 w-4" />
+            </div>
+            <span>Registre des Élèves</span>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
-

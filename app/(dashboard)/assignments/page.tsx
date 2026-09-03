@@ -1,13 +1,50 @@
 'use client';
+
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import {
+  Calendar,
+  Plus,
+  Search,
+  RotateCcw,
+  CheckCircle2,
+  AlertCircle,
+  GraduationCap,
+  BookOpen,
+  School,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { api } from '@/lib/api/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Avatar } from '@/components/ui/avatar';
+import { Dialog } from '@/components/ui/dialog';
 
-type Assignment = { id: string; enseignant: { nom: string; postnom: string | null; prenom: string }; annee: { libelle: string }; classeMatiere: { classe: { libelle: string }; matiere: { libelle: string } } };
-type ClasseMatiere = { id: string; classe: { id: string; libelle: string }; matiere: { id: string; libelle: string }; coefficient: string };
-type Enseignant = { id: string; nom: string; postnom: string | null; prenom: string };
+type Assignment = {
+  id: string;
+  enseignant: { nom: string; postnom: string | null; prenom: string };
+  annee: { libelle: string };
+  classeMatiere: {
+    classe: { libelle: string };
+    matiere: { libelle: string };
+  };
+};
+type ClasseMatiere = {
+  id: string;
+  classe: { id: string; libelle: string };
+  matiere: { id: string; libelle: string };
+  coefficient: string;
+};
+type Enseignant = {
+  id: string;
+  nom: string;
+  postnom: string | null;
+  prenom: string;
+};
 type Annee = { id: string; libelle: string; estActive: boolean };
-
-const inputCls = 'w-full rounded-md border p-2 text-sm';
 
 export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState<Assignment[] | null>(null);
@@ -17,18 +54,23 @@ export default function AssignmentsPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+
+  // Filters & pagination
   const [search, setSearch] = useState('');
   const [filterClasse, setFilterClasse] = useState('');
   const [filterMatiere, setFilterMatiere] = useState('');
   const [filterAnnee, setFilterAnnee] = useState('');
   const [page, setPage] = useState(1);
-  const pageSize = 20;
+  const pageSize = 15;
 
   async function refresh() {
     const [a, cs, c] = await Promise.all([
       api.get<Assignment[]>('/administration/assignments'),
       api.get<ClasseMatiere[]>('/administration/class-subjects'),
-      api.get<{ enseignants: Enseignant[]; annees: Annee[] }>('/administration/catalogue'),
+      api.get<{ enseignants: Enseignant[]; annees: Annee[] }>(
+        '/administration/catalogue'
+      ),
     ]);
     setAssignments(a.data);
     setClassSubjects(cs.data);
@@ -36,87 +78,362 @@ export default function AssignmentsPage() {
     setAnnees(c.data.annees);
   }
 
-  useEffect(() => { refresh().catch(() => setError('Impossible de charger les affectations.')); }, []);
+  useEffect(() => {
+    refresh().catch(() =>
+      setError('Impossible de charger les affectations.')
+    );
+  }, []);
 
-  useEffect(() => { setPage(1); }, [search, filterClasse, filterMatiere, filterAnnee]);
+  useEffect(() => {
+    setPage(1);
+  }, [search, filterClasse, filterMatiere, filterAnnee]);
 
   const filteredAssignments = useMemo(() => {
     if (!assignments) return [];
     const query = search.trim().toLowerCase();
     return assignments.filter((assignment) => {
-      const teacher = `${assignment.enseignant.nom} ${assignment.enseignant.postnom ?? ''} ${assignment.enseignant.prenom}`;
+      const teacher = `${assignment.enseignant.nom} ${
+        assignment.enseignant.postnom ?? ''
+      } ${assignment.enseignant.prenom}`;
       const classe = assignment.classeMatiere.classe.libelle;
       const matiere = assignment.classeMatiere.matiere.libelle;
       if (filterClasse && classe !== filterClasse) return false;
       if (filterMatiere && matiere !== filterMatiere) return false;
       if (filterAnnee && assignment.annee.libelle !== filterAnnee) return false;
-      return !query || `${teacher} ${classe} ${matiere} ${assignment.annee.libelle}`.toLowerCase().includes(query);
+      return (
+        !query ||
+        `${teacher} ${classe} ${matiere} ${assignment.annee.libelle}`
+          .toLowerCase()
+          .includes(query)
+      );
     });
   }, [assignments, search, filterClasse, filterMatiere, filterAnnee]);
 
   const totalPages = Math.max(1, Math.ceil(filteredAssignments.length / pageSize));
-  const paginatedAssignments = useMemo(() => filteredAssignments.slice((page - 1) * pageSize, page * pageSize), [filteredAssignments, page]);
-  const classes = useMemo(() => [...new Set((classSubjects ?? []).map((item) => item.classe.libelle))], [classSubjects]);
-  const matieres = useMemo(() => [...new Set((classSubjects ?? []).map((item) => item.matiere.libelle))], [classSubjects]);
-  const hasActiveFilters = search !== '' || filterClasse !== '' || filterMatiere !== '' || filterAnnee !== '';
+  const paginatedAssignments = useMemo(
+    () =>
+      filteredAssignments.slice((page - 1) * pageSize, page * pageSize),
+    [filteredAssignments, page]
+  );
+  const classes = useMemo(
+    () => [...new Set((classSubjects ?? []).map((item) => item.classe.libelle))],
+    [classSubjects]
+  );
+  const matieres = useMemo(
+    () => [...new Set((classSubjects ?? []).map((item) => item.matiere.libelle))],
+    [classSubjects]
+  );
+  const hasActiveFilters =
+    search !== '' ||
+    filterClasse !== '' ||
+    filterMatiere !== '' ||
+    filterAnnee !== '';
 
   function resetFilters() {
-    setSearch(''); setFilterClasse(''); setFilterMatiere(''); setFilterAnnee(''); setPage(1);
+    setSearch('');
+    setFilterClasse('');
+    setFilterMatiere('');
+    setFilterAnnee('');
+    setPage(1);
   }
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const f = new FormData(form);
-    setBusy(true); setError(''); setMessage('');
-    api.post('/administration/assignments', { idEnseignant: f.get('idEnseignant'), idClasseMatiere: f.get('idClasseMatiere'), idAnnee: f.get('idAnnee') })
-      .then(async () => { setMessage('Affectation enregistrée.'); form.reset(); await refresh(); })
-      .catch((err: any) => setError(err.response?.data?.message?.toString?.() ?? 'Erreur lors de l’affectation.'))
+    setBusy(true);
+    setError('');
+    setMessage('');
+    api
+      .post('/administration/assignments', {
+        idEnseignant: f.get('idEnseignant'),
+        idClasseMatiere: f.get('idClasseMatiere'),
+        idAnnee: f.get('idAnnee'),
+      })
+      .then(async () => {
+        setMessage('Affectation pédagogique enregistrée avec succès.');
+        setOpenModal(false);
+        await refresh();
+      })
+      .catch((err: any) =>
+        setError(
+          err.response?.data?.message?.toString?.() ??
+            "Erreur lors de l'affectation."
+        )
+      )
       .finally(() => setBusy(false));
   }
 
   return (
-    <section className="space-y-6">
-      <div><h1 className="text-2xl font-bold">Affectations</h1><p className="mt-1 text-sm text-slate-600">Affectez un enseignant à un couple classe–matière pour l’année scolaire.</p></div>
-      {(message || error) && <p className={`rounded p-3 text-sm ${error ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'}`}>{error || message}</p>}
+    <section className="space-y-6 animate-fade-in">
+      {/* ── Page Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
+            <Calendar className="h-6 w-6 text-brand-600" />
+            Affectations Pédagogiques
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-slate-500">
+            Attribuez les cours et les classes aux enseignants pour chaque année
+            scolaire.
+          </p>
+        </div>
 
-      <form onSubmit={submit} className="grid gap-3 rounded-lg bg-white p-5 shadow-sm md:grid-cols-4">
-        <label className="text-sm font-medium">Enseignant<select required name="idEnseignant" className={`${inputCls} mt-1`} defaultValue=""><option value="">— Choisir —</option>{enseignants?.map((t) => <option key={t.id} value={t.id}>{t.nom} {t.postnom ?? ''} {t.prenom}</option>)}</select></label>
-        <label className="text-sm font-medium">Classe — Matière<select required name="idClasseMatiere" className={`${inputCls} mt-1`} defaultValue=""><option value="">— Choisir —</option>{classSubjects?.map((cs) => <option key={cs.id} value={cs.id}>{cs.classe.libelle} — {cs.matiere.libelle} (coef {cs.coefficient})</option>)}</select></label>
-        <label className="text-sm font-medium">Année scolaire<select required name="idAnnee" className={`${inputCls} mt-1`} defaultValue=""><option value="">— Choisir —</option>{annees?.map((a) => <option key={a.id} value={a.id}>{a.libelle}{a.estActive ? ' (active)' : ''}</option>)}</select></label>
-        <div className="flex items-end"><button disabled={busy} className="w-full rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">Affecter</button></div>
-      </form>
+        <Button onClick={() => setOpenModal(true)}>
+          <Plus className="mr-1.5 h-4 w-4" />
+          Nouvelle Affectation
+        </Button>
+      </div>
 
-      <div className="overflow-x-auto rounded-lg bg-white shadow-sm">
-        <div className="space-y-3 border-b border-slate-100 bg-slate-50/60 p-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="font-semibold text-slate-800">Liste des affectations</h2>
-            <span className="text-xs font-medium text-slate-500">{assignments ? <>Affichage de <span className="font-bold text-slate-700">{filteredAssignments.length}</span> sur <span className="font-bold text-slate-700">{assignments.length}</span> affectation(s)</> : 'Chargement...'}</span>
+      {message && (
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs sm:text-sm text-emerald-800">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+          <span>{message}</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs sm:text-sm text-rose-800">
+          <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* ── Filter Toolbar ── */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-soft-sm space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-1.5">
+            <Label>Recherche générale</Label>
+            <div className="relative">
+              <Input
+                placeholder="Enseignant, classe, matière…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 text-xs"
+              />
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher (enseignant, classe, matière)..." className={inputCls} />
-            <select value={filterClasse} onChange={(e) => setFilterClasse(e.target.value)} className={inputCls}><option value="">Toutes les classes</option>{classes.map((classe) => <option key={classe} value={classe}>{classe}</option>)}</select>
-            <select value={filterMatiere} onChange={(e) => setFilterMatiere(e.target.value)} className={inputCls}><option value="">Toutes les matières</option>{matieres.map((matiere) => <option key={matiere} value={matiere}>{matiere}</option>)}</select>
-            <div className="flex gap-2"><select value={filterAnnee} onChange={(e) => setFilterAnnee(e.target.value)} className={inputCls}><option value="">Toutes les années</option>{annees?.map((annee) => <option key={annee.id} value={annee.libelle}>{annee.libelle}</option>)}</select>{hasActiveFilters && <button type="button" onClick={resetFilters} title="Réinitialiser les filtres" className="shrink-0 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100">Effacer</button>}</div>
+
+          <div className="space-y-1.5">
+            <Label>Filtrer par Classe</Label>
+            <Select
+              value={filterClasse}
+              onChange={(e) => setFilterClasse(e.target.value)}
+              className="text-xs"
+            >
+              <option value="">Toutes les classes</option>
+              {classes.map((classe) => (
+                <option key={classe} value={classe}>
+                  {classe}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Filtrer par Matière</Label>
+            <Select
+              value={filterMatiere}
+              onChange={(e) => setFilterMatiere(e.target.value)}
+              className="text-xs"
+            >
+              <option value="">Toutes les matières</option>
+              {matieres.map((matiere) => (
+                <option key={matiere} value={matiere}>
+                  {matiere}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Année Scolaire</Label>
+            <Select
+              value={filterAnnee}
+              onChange={(e) => setFilterAnnee(e.target.value)}
+              className="text-xs"
+            >
+              <option value="">Toutes les années</option>
+              {annees?.map((annee) => (
+                <option key={annee.id} value={annee.libelle}>
+                  {annee.libelle}
+                </option>
+              ))}
+            </Select>
           </div>
         </div>
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-100 text-slate-600"><tr><th className="p-3">Enseignant</th><th className="p-3">Classe</th><th className="p-3">Matière</th><th className="p-3">Année</th></tr></thead>
-          <tbody>
-            {paginatedAssignments.map((a) => (
-              <tr key={a.id} className="border-t">
-                <td className="p-3">{a.enseignant.nom} {a.enseignant.postnom ?? ''} {a.enseignant.prenom}</td>
-                <td className="p-3">{a.classeMatiere.classe.libelle}</td>
-                <td className="p-3">{a.classeMatiere.matiere.libelle}</td>
-                <td className="p-3">{a.annee.libelle}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {assignments !== null && filteredAssignments.length === 0 && <div className="p-6 text-center text-sm text-slate-500">{hasActiveFilters ? <><p>Aucune affectation ne correspond à vos critères.</p><button type="button" onClick={resetFilters} className="mt-2 font-semibold text-brand-600 underline">Réinitialiser les filtres</button></> : <p>Aucune affectation.</p>}</div>}
-        {totalPages > 1 && <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 p-3 text-xs text-slate-600"><span>Page <b className="text-slate-800">{page}</b> sur <b className="text-slate-800">{totalPages}</b></span><div className="flex gap-1"><button type="button" disabled={page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))} className="rounded border border-slate-200 bg-white px-3 py-1 disabled:opacity-40">Précédent</button><button type="button" disabled={page >= totalPages} onClick={() => setPage((current) => Math.min(totalPages, current + 1))} className="rounded border border-slate-200 bg-white px-3 py-1 disabled:opacity-40">Suivant</button></div></div>}
+
+        {hasActiveFilters && (
+          <div className="flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500">
+            <span>
+              Résultats : <strong>{filteredAssignments.length}</strong> affectation(s)
+            </span>
+            <button
+              onClick={resetFilters}
+              className="flex items-center gap-1 font-semibold text-brand-600 hover:underline"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Effacer les filtres
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* ── Table ── */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-soft-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="border-b border-slate-200 bg-slate-100/70 text-xs font-semibold uppercase tracking-wider text-slate-600">
+              <tr>
+                <th className="p-3.5">Professeur Titulaire</th>
+                <th className="p-3.5">Classe</th>
+                <th className="p-3.5">Discipline / Matière</th>
+                <th className="p-3.5 text-right">Année Scolaire</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {assignments === null ? (
+                <tr>
+                  <td colSpan={4} className="p-8 text-center text-xs text-slate-500">
+                    Chargement des affectations…
+                  </td>
+                </tr>
+              ) : paginatedAssignments.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="p-8 text-center text-xs text-slate-500">
+                    Aucune affectation trouvée avec ces critères.
+                  </td>
+                </tr>
+              ) : (
+                paginatedAssignments.map((a) => {
+                  const teacherName = `${a.enseignant.nom} ${
+                    a.enseignant.postnom ?? ''
+                  } ${a.enseignant.prenom}`.trim();
+
+                  return (
+                    <tr
+                      key={a.id}
+                      className="transition-colors hover:bg-slate-50/70"
+                    >
+                      <td className="p-3.5">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={teacherName} size="sm" />
+                          <span className="font-semibold text-slate-800 text-xs sm:text-sm">
+                            {teacherName}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-3.5">
+                        <Badge variant="violet" className="text-xs">
+                          {a.classeMatiere.classe.libelle}
+                        </Badge>
+                      </td>
+                      <td className="p-3.5">
+                        <span className="font-medium text-slate-800 text-xs sm:text-sm">
+                          {a.classeMatiere.matiere.libelle}
+                        </span>
+                      </td>
+                      <td className="p-3.5 text-right font-mono text-xs text-slate-600">
+                        {a.annee.libelle}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-slate-100 p-4 text-xs text-slate-500">
+            <span>
+              Page {page} sur {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Précédent
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                Suivant
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Modal: Nouvelle Affectation ── */}
+      <Dialog
+        open={openModal}
+        onOpenChange={setOpenModal}
+        title="Affecter un enseignant"
+        description="Attribuez une classe et une matière à un professeur"
+        maxWidth="md"
+      >
+        <form onSubmit={submit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label requiredIndicator>Enseignant</Label>
+            <Select required name="idEnseignant" defaultValue="">
+              <option value="">— Sélectionner un enseignant —</option>
+              {enseignants?.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.nom} {t.postnom ?? ''} {t.prenom}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label requiredIndicator>Classe & Matière</Label>
+            <Select required name="idClasseMatiere" defaultValue="">
+              <option value="">— Sélectionner la classe et matière —</option>
+              {classSubjects?.map((cs) => (
+                <option key={cs.id} value={cs.id}>
+                  {cs.classe.libelle} — {cs.matiere.libelle} (coef {cs.coefficient})
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label requiredIndicator>Année scolaire</Label>
+            <Select required name="idAnnee" defaultValue="">
+              <option value="">— Sélectionner l&apos;année —</option>
+              {annees?.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.libelle} {a.estActive ? '(Active)' : ''}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpenModal(false)}
+            >
+              Annuler
+            </Button>
+            <Button type="submit" loading={busy}>
+              Enregistrer l&apos;affectation
+            </Button>
+          </div>
+        </form>
+      </Dialog>
     </section>
   );
 }
-
