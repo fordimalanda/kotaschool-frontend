@@ -261,9 +261,6 @@ export default function DashboardLayout({
                 <span className="text-xl font-bold tracking-tight text-white">
                   Kotaschool
                 </span>
-                <span className="rounded-md bg-brand-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-brand-300">
-                  v2.0
-                </span>
               </div>
               <p className="text-xs text-slate-400">Système Éducatif · EPSP</p>
             </div>
