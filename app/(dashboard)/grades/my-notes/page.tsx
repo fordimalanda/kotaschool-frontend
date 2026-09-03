@@ -503,6 +503,8 @@ export default function MyNotesPage() {
               </div>
             ) : (
               <>
+                {annual.bulletin && (
+                <>
                 {/* Mention badge + stats */}
                 <div className="mb-5 flex flex-wrap items-start gap-4">
                   <div className={`rounded-xl border-2 px-6 py-3 text-center ${mentionColor}`}>
@@ -627,6 +629,8 @@ export default function MyNotesPage() {
                     ⬇️ Télécharger PDF officiel (paysage)
                   </button>
                 </div>
+                </>
+                )}
               </>
             )}
           </div>
