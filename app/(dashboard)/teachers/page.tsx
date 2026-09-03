@@ -1,5 +1,5 @@
 'use client';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api/client';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -12,7 +12,11 @@ export default function TeachersPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [search, setSearch] = useState('');
+  const [filterSexe, setFilterSexe] = useState('');
+  const [page, setPage] = useState(1);
   const user = useAuthStore((s) => s.user);
+  const pageSize = 20;
 
   function submitAdmin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -31,6 +35,29 @@ export default function TeachersPage() {
   }
 
   useEffect(() => { refresh().catch(() => setError('Impossible de charger les enseignants.')); }, []);
+
+  useEffect(() => { setPage(1); }, [search, filterSexe]);
+
+  const filteredEnseignants = useMemo(() => {
+    if (!enseignants) return [];
+    const query = search.trim().toLowerCase();
+    return enseignants.filter((teacher) => {
+      if (filterSexe && teacher.sexe !== filterSexe) return false;
+      if (!query) return true;
+      const fullName = `${teacher.nom} ${teacher.postnom ?? ''} ${teacher.prenom}`.toLowerCase();
+      return fullName.includes(query) || (teacher.telephone ?? '').toLowerCase().includes(query) || (teacher.email ?? '').toLowerCase().includes(query);
+    });
+  }, [enseignants, search, filterSexe]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredEnseignants.length / pageSize));
+  const paginatedEnseignants = useMemo(() => filteredEnseignants.slice((page - 1) * pageSize, page * pageSize), [filteredEnseignants, page]);
+  const hasActiveFilters = search !== '' || filterSexe !== '';
+
+  function resetFilters() {
+    setSearch('');
+    setFilterSexe('');
+    setPage(1);
+  }
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -81,10 +108,23 @@ export default function TeachersPage() {
       )}
 
       <div className="overflow-x-auto rounded-lg bg-white shadow-sm">
+        <div className="space-y-3 border-b border-slate-100 bg-slate-50/60 p-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="font-semibold text-slate-800">Liste des enseignants</h2>
+            <span className="text-xs font-medium text-slate-500">{enseignants ? <>Affichage de <span className="font-bold text-slate-700">{filteredEnseignants.length}</span> sur <span className="font-bold text-slate-700">{enseignants.length}</span> enseignant(s)</> : 'Chargement...'}</span>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher (nom, téléphone, email)..." className={`${inputCls} sm:flex-1`} />
+            <div className="flex gap-2 sm:w-64">
+              <select value={filterSexe} onChange={(e) => setFilterSexe(e.target.value)} className={inputCls}><option value="">Tous les sexes</option><option value="M">Masculin (M)</option><option value="F">Féminin (F)</option></select>
+              {hasActiveFilters && <button type="button" onClick={resetFilters} title="Réinitialiser les filtres" className="shrink-0 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100">Effacer</button>}
+            </div>
+          </div>
+        </div>
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-100 text-slate-600"><tr><th className="p-3">Nom complet</th><th className="p-3">Sexe</th><th className="p-3">Téléphone</th><th className="p-3">Email</th></tr></thead>
           <tbody>
-            {enseignants?.map((t) => (
+            {paginatedEnseignants.map((t) => (
               <tr key={t.id} className="border-t">
                 <td className="p-3">{t.nom} {t.postnom ?? ''} {t.prenom}</td>
                 <td className="p-3">{t.sexe === 'M' ? 'M' : 'F'}</td>
@@ -94,7 +134,8 @@ export default function TeachersPage() {
             ))}
           </tbody>
         </table>
-        {enseignants !== null && enseignants.length === 0 && <p className="p-6 text-sm text-slate-500">Aucun enseignant.</p>}
+        {enseignants !== null && filteredEnseignants.length === 0 && <div className="p-6 text-center text-sm text-slate-500">{hasActiveFilters ? <><p>Aucun enseignant ne correspond à vos critères.</p><button type="button" onClick={resetFilters} className="mt-2 font-semibold text-brand-600 underline">Réinitialiser les filtres</button></> : <p>Aucun enseignant.</p>}</div>}
+        {totalPages > 1 && <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 p-3 text-xs text-slate-600"><span>Page <b className="text-slate-800">{page}</b> sur <b className="text-slate-800">{totalPages}</b></span><div className="flex gap-1"><button type="button" disabled={page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))} className="rounded border border-slate-200 bg-white px-3 py-1 disabled:opacity-40">Précédent</button><button type="button" disabled={page >= totalPages} onClick={() => setPage((current) => Math.min(totalPages, current + 1))} className="rounded border border-slate-200 bg-white px-3 py-1 disabled:opacity-40">Suivant</button></div></div>}
       </div>
     </section>
   );
