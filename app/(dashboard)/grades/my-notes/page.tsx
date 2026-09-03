@@ -53,6 +53,8 @@ type MyAnnual = {
   annee: string;
   bulletin: BulletinAnnuel | null;
   published: boolean;
+  readyForAnnual: boolean;
+  missingInfo: string | null;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -455,10 +457,49 @@ export default function MyNotesPage() {
           </div>
 
           <div className="p-6">
-            {!annual.bulletin ? (
-              <div className="flex items-center gap-3 rounded-lg bg-slate-50 p-5 text-slate-500">
-                <span className="text-2xl">🔒</span>
-                <p className="text-sm">Le bulletin annuel sera disponible une fois les deux semestres complétés et validés.</p>
+            {!annual.readyForAnnual ? (
+              <div className="rounded-xl border-2 border-amber-200 bg-amber-50/60 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-amber-100">
+                    <span className="text-2xl">⏳</span>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-amber-900 text-base">Bulletin Scolaire Annuel — En cours de constitution</h3>
+                    <p className="mt-1 text-sm text-amber-800">
+                      Le bulletin annuel ne peut être généré que lorsque <strong>toutes</strong> les notes des deux semestres ont été saisies et validées pour chaque cours.
+                    </p>
+                    {annual.missingInfo && (
+                      <p className="mt-2 text-xs text-amber-700 bg-amber-100 rounded-md px-3 py-2 border border-amber-200">
+                        ℹ️ {annual.missingInfo}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {/* Boutons désactivés avec indication */}
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <div className="relative group">
+                    <button
+                      disabled
+                      className="cursor-not-allowed rounded-md border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-400 opacity-60"
+                    >
+                      🖨️ Imprimer le bulletin annuel
+                    </button>
+                    <div className="pointer-events-none absolute bottom-full left-0 mb-2 hidden w-64 rounded-md bg-slate-800 px-3 py-2 text-xs text-white shadow-lg group-hover:block">
+                      Disponible quand toutes les notes des S1 et S2 sont complètes.
+                    </div>
+                  </div>
+                  <div className="relative group">
+                    <button
+                      disabled
+                      className="cursor-not-allowed rounded-md bg-slate-300 px-4 py-2 text-sm font-medium text-slate-500 opacity-60"
+                    >
+                      ⬇️ Télécharger PDF officiel (paysage)
+                    </button>
+                    <div className="pointer-events-none absolute bottom-full left-0 mb-2 hidden w-64 rounded-md bg-slate-800 px-3 py-2 text-xs text-white shadow-lg group-hover:block">
+                      Disponible quand toutes les notes des S1 et S2 sont complètes.
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <>
@@ -571,17 +612,17 @@ export default function MyNotesPage() {
                   </table>
                 </div>
 
-                {/* Boutons impression/téléchargement */}
+                {/* Boutons impression/téléchargement — actifs car readyForAnnual */}
                 <div className="mt-4 flex flex-wrap gap-3">
                   <button
                     onClick={() => annual.bulletin && printAnnualBulletin(annual.eleve, annual.classe, annual.option, annual.section, annual.annee, annual.bulletin)}
-                    className="rounded-md border border-violet-600 px-4 py-2 text-sm font-medium text-violet-600 hover:bg-violet-50"
+                    className="rounded-md border border-violet-600 px-4 py-2 text-sm font-medium text-violet-600 hover:bg-violet-50 transition-colors"
                   >
                     🖨️ Imprimer le bulletin annuel
                   </button>
                   <button
                     onClick={() => annual.bulletin && downloadAnnualPdf(annual.eleve, annual.classe, annual.option, annual.section, annual.annee, annual.bulletin)}
-                    className="rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700"
+                    className="rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 transition-colors"
                   >
                     ⬇️ Télécharger PDF officiel (paysage)
                   </button>

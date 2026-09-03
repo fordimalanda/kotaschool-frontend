@@ -25,9 +25,13 @@
     "react-hook-form": "^7.62.0",
     "tailwind-merge": "^3.3.0",
     "zod": "^4.1.5",
+    "chart.js": "^4.4.9",
+    "react-chartjs-2": "^5.3.0",
+    "d3": "^7.9.0",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",

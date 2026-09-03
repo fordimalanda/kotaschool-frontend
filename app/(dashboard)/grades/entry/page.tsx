@@ -1,5 +1,6 @@
 'use client';
 import { FormEvent, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api/client';
 import { GradeTable, type GradeRow } from '@/components/grades/grade-table';
 
@@ -33,16 +34,22 @@ export default function GradeEntryPage() {
   const [libelle, setLibelle] = useState('');
   const [dateEval, setDateEval] = useState(() => new Date().toISOString().slice(0, 10));
 
-  // Mode correction (pour les évaluations validées)
   const [correctionMode, setCorrectionMode] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     api.get<Ctx>('/notes/context').then(({ data }) => {
       setCtx(data);
-      if (data.assignments[0]) setAssignmentId(data.assignments[0].id);
+      // Lire le query param ?assignmentId= pour présélectionner l'affectation
+      const qAssignmentId = searchParams.get('assignmentId');
+      const targetId = qAssignmentId && data.assignments.find((a) => a.id === qAssignmentId)
+        ? qAssignmentId
+        : data.assignments[0]?.id ?? '';
+      setAssignmentId(targetId);
       if (data.semestres[0]) { setSemestreId(data.semestres[0].id); setPeriodeId(data.semestres[0].periodes[0]?.id ?? ''); }
       if (data.typesEvaluation[0]) setTypeId(data.typesEvaluation[0].id);
     }).catch(() => setError("Impossible de charger le contexte. L'API est-elle démarrée ?")).finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const assignment = ctx?.assignments.find((a) => a.id === assignmentId) ?? null;

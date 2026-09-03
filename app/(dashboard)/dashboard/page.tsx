@@ -47,7 +47,8 @@ export default function DashboardPage() {
 
       {user?.role === 'STUDENT' && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Stat label="Mes résultats et bulletins" value="Voir" href="/grades/my-notes" />
+          <Stat label="Mes résultats et bulletins" value="Bulletins" href="/grades/my-notes" />
+          <Stat label="📊 Mes notes en direct" value="Consulter" href="/grades/my-scores" />
         </div>
       )}
 
@@ -63,7 +64,7 @@ export default function DashboardPage() {
                 {assignments.map((a) => (
                   <li key={a.id} className="flex items-center justify-between rounded-md border p-3">
                     <span>{a.classeMatiere.classe.libelle} — <strong>{a.classeMatiere.matiere.libelle}</strong> ({a.annee.libelle})</span>
-                    <Link href="/grades/entry" className="rounded border border-brand-600 px-3 py-1 text-xs font-medium text-brand-600">Saisir les notes</Link>
+                    <Link href={`/grades/entry?assignmentId=${a.id}`} className="rounded border border-brand-600 px-3 py-1 text-xs font-medium text-brand-600">Saisir les notes</Link>
                   </li>
                 ))}
               </ul>
