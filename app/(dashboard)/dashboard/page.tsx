@@ -220,18 +220,6 @@ export default function DashboardPage() {
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
 
-            {(user?.role === 'ADMIN' || user?.role === 'SECRETARY') && (
-              <Button
-                asChild
-                className="bg-white text-brand-900 hover:bg-slate-100 shadow-soft-md"
-              >
-                <Link href="/students">
-                  <Users className="mr-2 h-4 w-4" />
-                  Gérer les élèves
-                </Link>
-              </Button>
-            )}
-
             {user?.role === 'STUDENT' && (
               <Button
                 asChild
