@@ -338,7 +338,7 @@ export default function DashboardPage() {
                   'Enseignants',
                   'Matières',
                   'Affectations',
-                  'Évaluations',
+                  'Épreuves',
                 ]}
                 values={[
                   counts?.eleves ?? 24,

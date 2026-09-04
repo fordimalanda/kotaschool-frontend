@@ -673,7 +673,7 @@ export default function MyNotesPage() {
                     {s.libelle}
                   </h2>
                   <p className="text-xs text-slate-400">
-                    Périodes d&apos;évaluation formative & Session d&apos;Examens
+                    Périodes & Session d&apos;Examens
                   </p>
                 </div>
               </div>
