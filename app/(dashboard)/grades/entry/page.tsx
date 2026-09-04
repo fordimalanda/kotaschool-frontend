@@ -289,7 +289,7 @@ export default function GradeEntryPage() {
       await api.post(`/notes/evaluations/${grid.evaluation.id}/soumettre`);
       await refreshContext();
       await loadGrid(grid.evaluation.id);
-      setMessage('Cotes soumises avec succès pour validation.');
+      setMessage('Cotes publiees : elles comptent maintenant pour les bulletins.');
     } catch {
       setError("Soumission impossible : au moins une cote doit etre saisie.");
     } finally {
@@ -421,9 +421,9 @@ export default function GradeEntryPage() {
                   <CheckCircle2 className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-amber-900">Cotes Validees Officiellement</p>
+                  <p className="text-sm font-semibold text-amber-900">Cotes Publiees et Comptabilisees</p>
                   <p className="text-xs text-amber-700">
-                    Vous pouvez corriger une cote en cas d&apos;erreur. Les bulletins seront mis a jour automatiquement.
+                    Ces notes comptent pour le calcul des bulletins. Vous pouvez corriger une cote en cas d&apos;erreur : les bulletins seront mis à jour automatiquement.
                   </p>
                 </div>
               </div>
@@ -466,7 +466,7 @@ export default function GradeEntryPage() {
                   </Button>
                   <Button onClick={submit} disabled={busy} variant="default" loading={busy}>
                     <Send className="mr-1.5 h-4 w-4" />
-                    Soumettre pour validation
+                    Publier les cotes
                   </Button>
                 </>
               )}

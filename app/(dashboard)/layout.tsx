@@ -72,12 +72,6 @@ const links: NavLinkItem[] = [
     roles: ['TEACHER'],
   },
   {
-    href: '/grades/validation',
-    label: 'Validation des Notes',
-    icon: ShieldCheck,
-    roles: ['ADMIN'],
-  },
-  {
     href: '/reports',
     label: 'Bulletins & Palmarès',
     icon: FileSpreadsheet,

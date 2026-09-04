@@ -110,7 +110,7 @@ export default function LoginPage() {
           <div className="space-y-3 pt-2">
             {[
               'Saisie rapide et sécurisée des notes par les enseignants',
-              'Contrôle qualité et validation officielle par l\'administration',
+              'Prise en compte directe des notes saisies dans les bulletins',
               'Calcul instantané des moyennes, pourcentages et rangs',
               'Consultation autonome en temps réel pour élèves et tuteurs',
             ].map((feature, i) => (

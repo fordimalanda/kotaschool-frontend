@@ -1,6 +1,6 @@
 # Kotaschool — Frontend
 
-Interface web de **Kotaschool** : gestion scolaire, saisie/validation des notes, classements et bulletins (EPSP – RDC).
+Interface web de **Kotaschool** : gestion scolaire, saisie/publication des notes, classements et bulletins (EPSP – RDC).
 
 - Application : `http://localhost:3000`
 - API associée : `http://localhost:4000/api/v1` — voir [`../kotaschool-backend/README.md`](../kotaschool-backend/README.md)
@@ -36,8 +36,7 @@ app/
     ├── academic/page.tsx     # Structure & matières (coefficients)
     ├── assignments/page.tsx  # Affectations
     ├── grades/
-    │   ├── entry/page.tsx        # Saisie des notes (enseignant)
-    │   └── validation/page.tsx   # Validation des notes (admin)
+    │   └── entry/page.tsx        # Saisie des notes (enseignant)
     └── reports/page.tsx      # Bulletins (classement + PDF)
 components/
 └── grades/grade-table.tsx    # Grille de saisie réutilisable (lecture seule possible)
@@ -61,7 +60,6 @@ Le menu et l'accès sont filtrés par rôle dans `app/(dashboard)/layout.tsx` (u
 | `/academic` | Structure & matières | ✅ | ❌ | ❌ |
 | `/assignments` | Affectations | ✅ | ❌ | ❌ |
 | `/grades/entry` | Saisie des notes | ❌ | ✅ | ❌ |
-| `/grades/validation` | Validation des notes | ✅ | ❌ | ❌ |
 | `/reports` | Bulletins | ✅ | ❌ | ❌ |
 | `/grades/my-scores` | Mes notes en direct | ❌ | ❌ | ✅ |
 | `/grades/my-notes` | Mes bulletins & palmarès | ❌ | ❌ | ✅ |
@@ -72,13 +70,12 @@ Le menu et l'accès sont filtrés par rôle dans `app/(dashboard)/layout.tsx` (u
 ## 🖥️ Pages et fonctionnalités
 
 - **Login** — connexion via `POST /auth/login`, enregistre `{ accessToken, user }` dans le store.
-- **Dashboard** — selon le rôle : statistiques cliquables + validations en attente (admin), affectations + accès rapide à la saisie (enseignant), notes récentes et accès aux bulletins (élève).
+- **Dashboard** — selon le rôle : statistiques cliquables et accès aux bulletins (admin), affectations + accès rapide à la saisie (enseignant), notes récentes et accès aux bulletins (élève).
 - **Élèves & inscriptions** — créer un élève, inscrire un élève (classe + année), liste avec inscription active.
 - **Enseignants** — créer un enseignant, liste des fiches.
 - **Structure & matières** — années, sections, options, classes, matières et **coefficients classe–matière** ; arbre de la structure.
 - **Affectations** — affecter un enseignant à un couple classe–matière pour une année, liste.
-- **Saisie des notes** *(enseignant)* — choisir son affectation, créer/sélectionner une évaluation (semestre, période, type, date), saisir la grille, **enregistrer en brouillon**, **soumettre** ; grille en lecture seule dès soumission/validation.
-- **Validation des notes** *(admin)* — consulter les évaluations soumises (grille en lecture seule) et **valider/verrouiller**.
+- **Saisie des notes** *(enseignant)* — choisir son affectation, créer/sélectionner une épreuve (semestre, période, type, date), saisir la grille, **enregistrer en brouillon**, **publier** ; les notes comptent immédiatement pour les bulletins et la grille passe en lecture seule.
 - **Bulletins** *(admin)* — sélectionner un semestre, **recalculer le classement**, consulter le bulletin détaillé d'un élève et l'**imprimer / exporter en PDF**.
 
 ---
@@ -87,12 +84,11 @@ Le menu et l'accès sont filtrés par rôle dans `app/(dashboard)/layout.tsx` (u
 
 ```mermaid
 flowchart LR
-    Enseignant[Saisie des notes<br/>brouillon → soumission] --> Admin[Validation officielle<br/>administrateur]
-    Admin --> Bulletins[Bulletins<br/>classement + PDF]
+    Enseignant[Saisie des notes<br/>brouillon → publication] --> Bulletins[Bulletins<br/>classement + PDF]
 ```
 
-- **Enseignant** : `/grades/entry` → sélection de l'affectation → création d'une évaluation → saisie → *Enregistrer en brouillon* → *Soumettre pour validation*.
-- **Administrateur** : `/grades/validation` → *Consulter* → *Valider* (verrouille les notes), puis `/reports` → *Recalculer le classement* → ouvrir un bulletin → *Imprimer / PDF*.
+- **Enseignant** : `/grades/entry` → sélection de l'affectation → création d'une épreuve → saisie → *Enregistrer en brouillon* → *Publier les notes* (elles comptent immédiatement pour les bulletins).
+- **Administrateur** : `/reports` → *Recalculer le classement* → ouvrir un bulletin → *Imprimer / PDF*.
 
 ---
 

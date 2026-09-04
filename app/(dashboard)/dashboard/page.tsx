@@ -7,7 +7,6 @@ import {
   GraduationCap,
   BookOpen,
   Calendar,
-  ShieldCheck,
   Award,
   TrendingUp,
   Edit3,
@@ -68,7 +67,6 @@ export default function DashboardPage() {
     enseignants: number;
     matieres: number;
     affectations: number;
-    enAttente: number;
   } | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -89,16 +87,14 @@ export default function DashboardPage() {
         api.get<CatalogueData>('/administration/catalogue'),
         api.get<unknown[]>('/administration/students'),
         api.get<unknown[]>('/administration/assignments'),
-        api.get<unknown[]>('/notes/validations'),
       ])
-        .then(([cat, stu, ass, val]) => {
+        .then(([cat, stu, ass]) => {
           setCatalogue(cat.data);
           setCounts({
             eleves: (stu.data as unknown[]).length,
             enseignants: cat.data.enseignants.length,
             matieres: cat.data.matieres.length,
             affectations: (ass.data as unknown[]).length,
-            enAttente: (val.data as unknown[]).length,
           });
         })
         .catch(() => setError('Impossible de charger les statistiques.'))
@@ -287,27 +283,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {user?.role === 'ADMIN' && (
-        <div className="grid gap-5 sm:grid-cols-2">
-          <StatCard
-            title="Notes à Valider"
-            value={counts?.enAttente ?? '—'}
-            description="Grilles de notes soumises en attente de validation"
-            icon={ShieldCheck}
-            href="/grades/validation"
-            colorTheme="amber"
-          />
-          <StatCard
-            title="Bulletins & Palmarès"
-            value="Délibérations"
-            description="Calcul et consultation des bulletins et classements"
-            icon={FileSpreadsheet}
-            href="/reports"
-            colorTheme="brand"
-          />
-        </div>
-      )}
-
       {/* ── Visualisations Avancées (Chart.js & D3.js) ── */}
       {user?.role === 'ADMIN' && (
         <div className="space-y-6">
@@ -344,7 +319,7 @@ export default function DashboardPage() {
                   counts?.eleves ?? 24,
                   counts?.enseignants ?? 10,
                   counts?.matieres ?? 18,
-                  counts?.enAttente ?? 14,
+                  counts?.affectations ?? 14,
                   28,
                 ]}
                 title="Aperçu des Données Clés de l'Établissement"
