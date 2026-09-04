@@ -283,9 +283,6 @@ export default function TeachersPage() {
                             <span className="font-semibold text-slate-800 text-xs sm:text-sm block">
                               {fullName}
                             </span>
-                            <span className="text-[11px] text-slate-400">
-                              Professeur Titulaire
-                            </span>
                           </div>
                         </div>
                       </td>
