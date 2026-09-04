@@ -109,7 +109,7 @@ export default function LoginPage() {
 
           <div className="space-y-3 pt-2">
             {[
-              'Saisie rapide et sécurisée des évaluations par les enseignants',
+              'Saisie rapide et sécurisée des notes par les enseignants',
               'Contrôle qualité et validation officielle par l\'administration',
               'Calcul instantané des moyennes, pourcentages et rangs',
               'Consultation autonome en temps réel pour élèves et tuteurs',

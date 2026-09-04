@@ -480,7 +480,7 @@ export default function MyScoresPage() {
                   <EmptyState
                     icon={Inbox}
                     title="Aucune note enregistrée pour ce semestre"
-                    description="Vos évaluations pour cette période scolaire apparaîtront ici au fur et à mesure de leur validation."
+                    description="Vos notes pour cette période scolaire apparaîtront ici au fur et à mesure de leur validation."
                   />
                 ) : (
                   <SubjectGradesGroup resultats={activeSemestre.resultats} />

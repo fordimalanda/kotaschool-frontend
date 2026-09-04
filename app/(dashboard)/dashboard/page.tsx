@@ -290,9 +290,9 @@ export default function DashboardPage() {
       {user?.role === 'ADMIN' && (
         <div className="grid gap-5 sm:grid-cols-2">
           <StatCard
-            title="Évaluations en Attente"
+            title="Notes à Valider"
             value={counts?.enAttente ?? '—'}
-            description="Notes soumises nécessitant validation officielle"
+            description="Grilles de notes soumises en attente de validation"
             icon={ShieldCheck}
             href="/grades/validation"
             colorTheme="amber"

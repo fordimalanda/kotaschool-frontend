@@ -689,7 +689,7 @@ export default function MyNotesPage() {
                 <table className="w-full text-left text-xs sm:text-sm">
                   <thead className="border-b border-slate-200 bg-slate-100/60 text-xs font-semibold uppercase tracking-wider text-slate-600">
                     <tr>
-                      <th className="p-3.5">Matière & Évaluation</th>
+                      <th className="p-3.5">Matière & Épreuve</th>
                       <th className="p-3.5">Type</th>
                       <th className="p-3.5">Période</th>
                       <th className="p-3.5">Note Obtenue</th>
@@ -861,8 +861,8 @@ export default function MyNotesPage() {
                     </h3>
                     <p className="text-xs sm:text-sm text-amber-800 leading-relaxed">
                       Le bulletin annuel synthétique sera automatiquement
-                      débloqué lorsque toutes les évaluations des semestres 1 et
-                      2 auront été validées par l&apos;équipe pédagogique.
+                      débloqué lorsque toutes les notes des semestres 1 et 2
+                      auront été validées.
                     </p>
                     {annual.missingInfo && (
                       <div className="mt-3 flex items-center gap-2 text-xs text-amber-900 bg-amber-100/80 rounded-lg p-2.5 border border-amber-200/80">

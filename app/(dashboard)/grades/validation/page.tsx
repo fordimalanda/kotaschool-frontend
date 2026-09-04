@@ -65,7 +65,7 @@ export default function ValidationPage() {
 
   useEffect(() => {
     refresh().catch(() =>
-      setError('Impossible de charger les évaluations soumises.')
+      setError('Impossible de charger les notes soumises.')
     );
   }, []);
 
@@ -88,7 +88,7 @@ export default function ValidationPage() {
       await api.post(`/notes/validations/${id}/valider`);
       setGrid(null);
       await refresh();
-      setMessage('Évaluation validée avec succès et verrouillée.');
+      setMessage('Notes validées avec succès et verrouillées.');
     } catch {
       setError('Validation impossible.');
     } finally {
@@ -103,11 +103,12 @@ export default function ValidationPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2.5">
             <ShieldCheck className="h-6 w-6 text-brand-600" />
-            Validation Pédagogique des Notes
+            Validation des Notes soumises
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-slate-500">
-            Contrôlez la conformité des évaluations soumises par les enseignants
-            avant publication officielle des bulletins.
+            Les enseignants soumettent ici les notes qu&apos;ils ont saisies.
+            Vérifiez la grille puis validez pour verrouiller avant le calcul des
+            bulletins.
           </p>
         </div>
         {pending && (
@@ -115,7 +116,7 @@ export default function ValidationPage() {
             variant={pending.length > 0 ? 'warning' : 'success'}
             className="self-start sm:self-auto text-xs"
           >
-            {pending.length} évaluation{pending.length > 1 ? 's' : ''} en attente
+            {pending.length} note{pending.length > 1 ? 's' : ''} soumise{pending.length > 1 ? 's' : ''} en attente
           </Badge>
         )}
       </div>
@@ -145,8 +146,8 @@ export default function ValidationPage() {
       ) : pending.length === 0 ? (
         <EmptyState
           icon={CheckCircle2}
-          title="Toutes les évaluations sont à jour"
-          description="Aucune évaluation soumise n'est en attente de validation officielle par l'administrateur."
+          title="Aucune note en attente de validation"
+          description="Lorsqu'un enseignant soumet une grille de notes, elle apparaît ici pour être vérifiée puis validée avant le calcul des bulletins."
         />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-soft-sm">
@@ -160,7 +161,7 @@ export default function ValidationPage() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-200 bg-slate-100/70 text-xs font-semibold uppercase tracking-wider text-slate-600">
                 <tr>
-                  <th className="p-3.5">Évaluation</th>
+                  <th className="p-3.5">Saisie soumise</th>
                   <th className="p-3.5">Classe & Matière</th>
                   <th className="p-3.5">Type & Période</th>
                   <th className="p-3.5">Enseignant</th>
