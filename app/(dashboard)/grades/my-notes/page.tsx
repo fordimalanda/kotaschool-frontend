@@ -811,8 +811,8 @@ export default function MyNotesPage() {
                   <Lock className="h-4 w-4 text-slate-400 shrink-0" />
                   <span>
                     Votre bulletin semestriel officiel sera généré dès que
-                    toutes les notes du semestre auront été validées par le
-                    Conseil Pédagogique.
+                    toutes les notes du semestre auront été validées par
+                    l'administration.
                   </span>
                 </div>
               )}

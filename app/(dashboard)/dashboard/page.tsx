@@ -67,6 +67,7 @@ export default function DashboardPage() {
     eleves: number;
     enseignants: number;
     matieres: number;
+    affectations: number;
     enAttente: number;
   } | null>(null);
   const [error, setError] = useState('');
@@ -83,35 +84,24 @@ export default function DashboardPage() {
         .then((r) => setAssignments(r.data))
         .catch(() => setError('Impossible de charger vos affectations.'))
         .finally(() => setLoading(false));
-    } else if (role === 'ADMIN' || role === 'SECRETARY') {
+    } else if (role === 'ADMIN') {
       Promise.all([
         api.get<CatalogueData>('/administration/catalogue'),
         api.get<unknown[]>('/administration/students'),
         api.get<unknown[]>('/administration/assignments'),
+        api.get<unknown[]>('/notes/validations'),
       ])
-        .then(([cat, stu, ass]) => {
+        .then(([cat, stu, ass, val]) => {
           setCatalogue(cat.data);
           setCounts({
             eleves: (stu.data as unknown[]).length,
             enseignants: cat.data.enseignants.length,
             matieres: cat.data.matieres.length,
-            enAttente: (ass.data as unknown[]).length,
+            affectations: (ass.data as unknown[]).length,
+            enAttente: (val.data as unknown[]).length,
           });
         })
         .catch(() => setError('Impossible de charger les statistiques.'))
-        .finally(() => setLoading(false));
-    } else if (role === 'PEDAGOGICAL_COUNCIL') {
-      api
-        .get<unknown[]>('/notes/validations')
-        .then((r) =>
-          setCounts({
-            eleves: 0,
-            enseignants: 0,
-            matieres: 0,
-            enAttente: (r.data as unknown[]).length,
-          })
-        )
-        .catch(() => setError('Impossible de charger les validations.'))
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
@@ -232,9 +222,7 @@ export default function DashboardPage() {
               </Button>
             )}
 
-            {(user?.role === 'ADMIN' ||
-              user?.role === 'SECRETARY' ||
-              user?.role === 'PEDAGOGICAL_COUNCIL') && (
+            {user?.role === 'ADMIN' && (
               <Button
                 asChild
                 variant="outline"
@@ -261,7 +249,7 @@ export default function DashboardPage() {
 
 
 
-      {(user?.role === 'ADMIN' || user?.role === 'SECRETARY') && (
+      {user?.role === 'ADMIN' && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Élèves Inscrits"
@@ -290,7 +278,7 @@ export default function DashboardPage() {
           />
           <StatCard
             title="Affectations Actives"
-            value={counts?.enAttente ?? '—'}
+            value={counts?.affectations ?? '—'}
             description="Attributions classe–matière"
             icon={Calendar}
             href="/assignments"
@@ -299,7 +287,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {user?.role === 'PEDAGOGICAL_COUNCIL' && (
+      {user?.role === 'ADMIN' && (
         <div className="grid gap-5 sm:grid-cols-2">
           <StatCard
             title="Évaluations en Attente"
@@ -310,9 +298,9 @@ export default function DashboardPage() {
             colorTheme="amber"
           />
           <StatCard
-            title="Bulletins Pédagogiques"
-            value="Palmarès"
-            description="Consultation et calcul des délibérations"
+            title="Bulletins & Palmarès"
+            value="Délibérations"
+            description="Calcul et consultation des bulletins et classements"
             icon={FileSpreadsheet}
             href="/reports"
             colorTheme="brand"
@@ -321,7 +309,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── Visualisations Avancées (Chart.js & D3.js) ── */}
-      {(user?.role === 'ADMIN' || user?.role === 'SECRETARY') && (
+      {user?.role === 'ADMIN' && (
         <div className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Chart.js Doughnut */}
@@ -423,7 +411,7 @@ export default function DashboardPage() {
               <EmptyState
                 icon={Calendar}
                 title="Aucune affectation active"
-                description="Le secrétariat ou l'administrateur n'a pas encore assigné de classe ou de matière à votre profil pour cette année."
+                description="L'administrateur n'a pas encore assigné de classe ou de matière à votre profil pour cette année."
               />
             )}
           </CardContent>

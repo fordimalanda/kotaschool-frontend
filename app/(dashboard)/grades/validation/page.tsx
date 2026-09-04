@@ -146,7 +146,7 @@ export default function ValidationPage() {
         <EmptyState
           icon={CheckCircle2}
           title="Toutes les évaluations sont à jour"
-          description="Aucune évaluation soumise n'est en attente de validation par le Conseil Pédagogique."
+          description="Aucune évaluation soumise n'est en attente de validation officielle par l'administrateur."
         />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-soft-sm">

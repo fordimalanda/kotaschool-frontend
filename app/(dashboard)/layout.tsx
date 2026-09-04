@@ -39,31 +39,31 @@ const links: NavLinkItem[] = [
     href: '/dashboard',
     label: 'Tableau de bord',
     icon: LayoutDashboard,
-    roles: ['ADMIN', 'TEACHER', 'SECRETARY', 'PEDAGOGICAL_COUNCIL', 'STUDENT'],
+    roles: ['ADMIN', 'TEACHER', 'STUDENT'],
   },
   {
     href: '/students',
     label: 'Élèves & Inscriptions',
     icon: Users,
-    roles: ['ADMIN', 'SECRETARY'],
+    roles: ['ADMIN'],
   },
   {
     href: '/teachers',
     label: 'Corps Enseignant',
     icon: GraduationCap,
-    roles: ['ADMIN', 'SECRETARY'],
+    roles: ['ADMIN'],
   },
   {
     href: '/academic',
     label: 'Structure & Matières',
     icon: Layers,
-    roles: ['ADMIN', 'SECRETARY'],
+    roles: ['ADMIN'],
   },
   {
     href: '/assignments',
     label: 'Affectations Pédagogiques',
     icon: Calendar,
-    roles: ['ADMIN', 'SECRETARY'],
+    roles: ['ADMIN'],
   },
   {
     href: '/grades/entry',
@@ -75,13 +75,13 @@ const links: NavLinkItem[] = [
     href: '/grades/validation',
     label: 'Validation des Notes',
     icon: ShieldCheck,
-    roles: ['ADMIN', 'PEDAGOGICAL_COUNCIL'],
+    roles: ['ADMIN'],
   },
   {
     href: '/reports',
     label: 'Bulletins & Palmarès',
     icon: FileSpreadsheet,
-    roles: ['ADMIN', 'SECRETARY', 'PEDAGOGICAL_COUNCIL'],
+    roles: ['ADMIN'],
   },
   {
     href: '/grades/my-scores',
@@ -99,9 +99,7 @@ const links: NavLinkItem[] = [
 
 const roleLabels: Record<string, { label: string; variant: 'default' | 'violet' | 'success' | 'warning' | 'sky' }> = {
   ADMIN: { label: 'Administrateur', variant: 'default' },
-  SECRETARY: { label: 'Secrétariat', variant: 'sky' },
   TEACHER: { label: 'Enseignant', variant: 'success' },
-  PEDAGOGICAL_COUNCIL: { label: 'Conseil Pédagogique', variant: 'warning' },
   STUDENT: { label: 'Élève', variant: 'violet' },
 };
 

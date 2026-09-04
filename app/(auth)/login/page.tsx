@@ -110,7 +110,7 @@ export default function LoginPage() {
           <div className="space-y-3 pt-2">
             {[
               'Saisie rapide et sécurisée des évaluations par les enseignants',
-              'Contrôle qualité et validation par le Conseil Pédagogique',
+              'Contrôle qualité et validation officielle par l\'administration',
               'Calcul instantané des moyennes, pourcentages et rangs',
               'Consultation autonome en temps réel pour élèves et tuteurs',
             ].map((feature, i) => (

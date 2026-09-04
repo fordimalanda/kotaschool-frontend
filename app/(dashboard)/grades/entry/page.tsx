@@ -289,7 +289,7 @@ export default function GradeEntryPage() {
       await api.post(`/notes/evaluations/${grid.evaluation.id}/soumettre`);
       await refreshContext();
       await loadGrid(grid.evaluation.id);
-      setMessage('Cotes soumises avec succes au Conseil Pedagogique.');
+      setMessage('Cotes soumises avec succès pour validation.');
     } catch {
       setError("Soumission impossible : au moins une cote doit etre saisie.");
     } finally {
@@ -466,7 +466,7 @@ export default function GradeEntryPage() {
                   </Button>
                   <Button onClick={submit} disabled={busy} variant="default" loading={busy}>
                     <Send className="mr-1.5 h-4 w-4" />
-                    Soumettre au Conseil
+                    Soumettre pour validation
                   </Button>
                 </>
               )}
